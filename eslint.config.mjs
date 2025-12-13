@@ -31,6 +31,10 @@ const eslintConfig = defineConfig([
   },
   {
     rules: {
+      // Disable base rule in favor of @typescript-eslint/no-redeclare which
+      // understands type/value declaration merging.
+      'no-redeclare': 'off',
+      eqeqeq: 'error',
       'no-duplicate-imports': 'error',
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unused-vars': [

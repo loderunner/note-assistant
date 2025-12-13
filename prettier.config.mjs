@@ -1,5 +1,5 @@
 /** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
-export default {
+const prettierConfig = {
   singleQuote: true,
   overrides: [
     {
@@ -12,3 +12,5 @@ export default {
   plugins: ['prettier-plugin-tailwindcss'],
   tailwindFunctions: ['twMerge', 'twJoin'],
 };
+
+export default prettierConfig;

@@ -1,7 +1,7 @@
 'use server';
 
-import { generateBulletPoints } from '../../summary/generate';
-import { getTranscript } from '../../youtube/get-transcript';
+import { generateBulletPoints } from '@/app/summary/generate';
+import { getTranscript } from '@/app/youtube/transcript';
 
 type ProcessResult = {
   points: string[];
@@ -24,7 +24,7 @@ export async function processVideo(videoId: string): Promise<ProcessResult> {
 
   const promise = (async () => {
     const transcriptResult = await getTranscript(videoId);
-    if (transcriptResult == null) {
+    if (transcriptResult === null) {
       throw new Error("Impossible d'obtenir la transcription de la vidéo");
     }
 

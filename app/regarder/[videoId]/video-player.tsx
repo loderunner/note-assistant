@@ -8,41 +8,6 @@ type VideoPlayerProps = {
   videoId: string;
 };
 
-// Type definitions for YouTube IFrame API - parameters are required by TypeScript but unused in type definitions
-/* eslint-disable no-unused-vars */
-declare global {
-  interface Window {
-    YT?: {
-      Player: {
-        new (
-          elementId: string | HTMLElement,
-          options: {
-            videoId: string;
-            width?: string | number;
-            height?: string | number;
-            playerVars?: {
-              autoplay?: number;
-              rel?: number;
-            };
-            events: {
-              onStateChange: (event: { data: number }) => void;
-              onReady?: () => void;
-              onError?: (event: { data: number }) => void;
-            };
-          },
-        ): {
-          destroy(): void;
-        };
-      };
-      PlayerState: {
-        ENDED: number;
-      };
-    };
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-/* eslint-enable no-unused-vars */
-
 export function VideoPlayer({ videoId }: VideoPlayerProps) {
   const [playerReady, setPlayerReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +16,12 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
   const router = useRouter();
 
   const initializePlayer = useCallback(() => {
-    if (containerRef.current == null || playerRef.current != null) {
+    if (containerRef.current === null || playerRef.current !== null) {
       return;
     }
 
-    if (typeof window === 'undefined' || window.YT == null) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (typeof window === 'undefined' || window.YT === undefined) {
       return;
     }
 
@@ -99,7 +65,8 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
       return;
     }
 
-    if (window.YT != null) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (window.YT !== null && window.YT !== undefined) {
       // Use setTimeout to avoid synchronous setState in effect
       const timeoutId = setTimeout(() => {
         initializePlayer();
@@ -113,20 +80,20 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
     tag.src = 'https://www.youtube.com/iframe_api';
     tag.async = true;
     const firstScriptTag = document.getElementsByTagName('script')[0];
-    if (firstScriptTag.parentNode != null) {
+    if (firstScriptTag.parentNode !== null) {
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
 
-    const originalCallback = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      if (originalCallback != null) {
+    const originalCallback = (window as any).onYouTubeIframeAPIReady;
+    (window as any).onYouTubeIframeAPIReady = () => {
+      if (originalCallback !== null && originalCallback !== undefined) {
         originalCallback();
       }
       initializePlayer();
     };
 
     return () => {
-      if (playerRef.current != null) {
+      if (playerRef.current !== null) {
         try {
           playerRef.current.destroy();
         } catch (err) {
@@ -142,14 +109,14 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
     <div className="flex w-full max-w-4xl flex-col items-center gap-6">
       <div className="relative aspect-video w-full">
         <div ref={containerRef} className="absolute inset-0 h-full w-full" />
-        {!playerReady && error == null && (
+        {!playerReady && error === null && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <p className="text-gray-500 dark:text-gray-400">
               Chargement de la vidéo...
             </p>
           </div>
         )}
-        {error != null && (
+        {error !== null && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>

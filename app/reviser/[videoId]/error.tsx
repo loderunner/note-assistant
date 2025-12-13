@@ -2,22 +2,17 @@
 
 import { motion } from 'motion/react';
 
-type ReviewErrorProps = {
-  /** The error message to display */
-  message: string;
-  /** The video ID for retry actions */
-  videoId: string;
-};
-
 /**
- * Error state component displayed when bullet point generation fails.
- * Provides options to retry or go back to the home page.
+ * Error boundary for the video review page.
+ * Catches rendering errors and provides retry functionality.
  */
-export function ReviewError({ message, videoId }: ReviewErrorProps) {
-  const handleRetry = () => {
-    window.location.reload();
-  };
-
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
@@ -44,7 +39,7 @@ export function ReviewError({ message, videoId }: ReviewErrorProps) {
         <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
           Erreur
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">{message}</p>
+        <p className="text-gray-600 dark:text-gray-400">{error.message}</p>
       </div>
 
       <div className="flex gap-4">
@@ -52,7 +47,7 @@ export function ReviewError({ message, videoId }: ReviewErrorProps) {
           className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={handleRetry}
+          onClick={reset}
         >
           Réessayer
         </motion.button>

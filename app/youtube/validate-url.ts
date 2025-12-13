@@ -15,7 +15,7 @@ export function extractVideoId(url: string): string | null {
 
   for (const pattern of patterns) {
     const match = url.trim().match(pattern);
-    if (match != null) {
+    if (match !== null) {
       return match[1];
     }
   }
