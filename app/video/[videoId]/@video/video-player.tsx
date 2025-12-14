@@ -143,18 +143,21 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6">
-      <div ref={outerContainerRef} className="relative aspect-video w-full">
+      <div
+        ref={outerContainerRef}
+        className="relative aspect-video w-full overflow-hidden rounded-2xl shadow-xl"
+      >
         <div ref={containerRef} className="absolute inset-0 h-full w-full" />
         {!playerReady && error === null && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 dark:bg-slate-800">
+            <p className="text-stone-600 dark:text-stone-300">
               Chargement de la vidéo...
             </p>
           </div>
         )}
         {error !== null && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-amber-50 dark:bg-slate-800">
+            <p className="text-rose-600 dark:text-rose-400">{error}</p>
           </div>
         )}
       </div>

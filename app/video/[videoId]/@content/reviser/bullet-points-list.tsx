@@ -45,8 +45,10 @@ function BulletPointItem({
     <li
       ref={itemRef}
       className={twMerge(
-        'flex translate-y-0 items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 opacity-100 transition-all duration-500 ease-out dark:border-gray-700 dark:bg-gray-900 starting:translate-y-4 starting:opacity-0',
-        checked ? 'translate-x-4 opacity-50' : 'translate-x-0',
+        'flex translate-y-0 items-start gap-4 rounded-2xl border-l-4 bg-amber-50 p-5 opacity-100 shadow-md transition-all duration-500 ease-out dark:bg-slate-800 dark:shadow-lg starting:translate-y-4 starting:opacity-0',
+        checked
+          ? 'translate-x-2 border-l-emerald-500 opacity-60'
+          : 'translate-x-0 border-l-rose-400',
       )}
       style={{
         transitionDelay: `${delay}ms`,
@@ -55,15 +57,15 @@ function BulletPointItem({
     >
       <button
         className={twMerge(
-          'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+          'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all',
           checked
-            ? 'border-emerald-500 bg-emerald-500'
-            : 'border-current bg-transparent',
+            ? 'scale-110 border-emerald-500 bg-emerald-500 shadow-md'
+            : 'border-stone-400 bg-white dark:border-stone-600 dark:bg-slate-700',
         )}
       >
         {checked && (
           <svg
-            className="h-3 w-3 scale-100 text-white transition-transform duration-200"
+            className="h-4 w-4 scale-100 text-white transition-transform duration-200"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -77,7 +79,14 @@ function BulletPointItem({
           </svg>
         )}
       </button>
-      <p className="flex-1 text-gray-800 select-none dark:text-gray-200">
+      <p
+        className={twMerge(
+          'flex-1 transition-all select-none',
+          checked
+            ? 'text-stone-500 line-through dark:text-stone-500'
+            : 'text-stone-700 dark:text-stone-200',
+        )}
+      >
         {point}
       </p>
     </li>

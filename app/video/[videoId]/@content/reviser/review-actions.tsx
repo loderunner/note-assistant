@@ -14,13 +14,13 @@ export function ReviewActions() {
   return (
     <div className="mt-8 flex gap-4">
       <button
-        className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all hover:scale-105 hover:bg-blue-700 active:scale-95"
+        className="rounded-full bg-linear-to-r from-rose-500 to-rose-600 px-8 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:from-rose-600 hover:to-rose-700 hover:shadow-xl active:scale-95"
         onClick={scrollToTop}
       >
         Revoir
       </button>
       <Link
-        className="rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 transition-all hover:scale-105 hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+        className="rounded-full border-2 border-stone-300 bg-amber-50 px-8 py-3 font-semibold text-stone-700 shadow-md transition-all hover:scale-105 hover:bg-amber-100 hover:shadow-lg active:scale-95 dark:border-slate-600 dark:bg-slate-800 dark:text-stone-200 dark:hover:bg-slate-700"
         href="/"
       >
         Nouvelle vidéo

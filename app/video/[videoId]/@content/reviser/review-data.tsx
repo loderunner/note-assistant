@@ -134,8 +134,21 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     return (
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
         <div className="text-center">
-          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-          <p className="text-gray-600 dark:text-gray-400">
+          <div className="mb-4 flex justify-center gap-2">
+            <div
+              className="h-3 w-3 animate-bounce rounded-full bg-rose-500"
+              style={{ animationDelay: '0ms' }}
+            />
+            <div
+              className="h-3 w-3 animate-bounce rounded-full bg-rose-500"
+              style={{ animationDelay: '150ms' }}
+            />
+            <div
+              className="h-3 w-3 animate-bounce rounded-full bg-rose-500"
+              style={{ animationDelay: '300ms' }}
+            />
+          </div>
+          <p className="text-stone-600 dark:text-stone-300">
             {messages[state.step]}
           </p>
         </div>
@@ -147,10 +160,11 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     return (
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
         <div className="text-center">
-          <p className="mb-4 text-lg font-medium text-red-600 dark:text-red-400">
-            Erreur
+          <div className="mb-4 text-4xl">😅</div>
+          <p className="mb-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
+            Oups !
           </p>
-          <p className="text-gray-600 dark:text-gray-400">{state.error}</p>
+          <p className="text-stone-600 dark:text-stone-400">{state.error}</p>
         </div>
       </div>
     );
