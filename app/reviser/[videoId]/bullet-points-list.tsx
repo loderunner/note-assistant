@@ -27,44 +27,53 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
       initial={{ opacity: 0, y: 20 }}
       transition={{ delay: 0.3, staggerChildren: 0.1 }}
     >
-      {points.map((point, index) => (
-        <motion.li
-          key={index}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
-          initial={{ opacity: 0, x: -20 }}
-          transition={{ delay: 0.3 + index * 0.1 }}
-        >
-          <button
-            className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
-            style={{
-              borderColor: checkedStates[index] ? '#10b981' : 'currentColor',
-              backgroundColor: checkedStates[index] ? '#10b981' : 'transparent',
+      {points.map((point, index) => {
+        const checked = checkedStates[index];
+        return (
+          <motion.li
+            key={index}
+            animate={{
+              opacity: checked ? 0.5 : 1,
+              x: checked ? 16 : 0,
             }}
-            onClick={() => toggleCheck(index)}
+            className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
+            initial={{ opacity: 0, x: -20 }}
+            transition={{
+              delay: checked ? 0 : 0.3 + index * 0.1,
+              duration: 0.25,
+              ease: 'easeOut',
+            }}
           >
-            {checkedStates[index] && (
-              <motion.svg
-                animate={{ scale: 1 }}
-                className="h-3 w-3 text-white"
-                fill="none"
-                initial={{ scale: 0 }}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M5 13l4 4L19 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={3}
-                />
-              </motion.svg>
-            )}
-          </button>
-          <p className="flex-1 text-gray-800 dark:text-gray-200">{point}</p>
-        </motion.li>
-      ))}
+            <button
+              className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
+              style={{
+                borderColor: checked ? '#10b981' : 'currentColor',
+                backgroundColor: checked ? '#10b981' : 'transparent',
+              }}
+              onClick={() => toggleCheck(index)}
+            >
+              {checked && (
+                <motion.svg
+                  animate={{ scale: 1 }}
+                  className="h-3 w-3 text-white"
+                  fill="none"
+                  initial={{ scale: 0 }}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M5 13l4 4L19 7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                  />
+                </motion.svg>
+              )}
+            </button>
+            <p className="flex-1 text-gray-800 dark:text-gray-200">{point}</p>
+          </motion.li>
+        );
+      })}
     </motion.ul>
   );
 }
-
