@@ -14,8 +14,10 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
   const [playerReady, setPlayerReadyLocal] = useState(false);
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const outerContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { setPlayerReady, setSkipToEnd } = useVideoPlayer();
+  const { setPlayerReady, setSkipToEnd, setPlayerContainerRef } =
+    useVideoPlayer();
 
   const initializePlayer = useCallback(() => {
     if (containerRef.current === null || playerRef.current !== null) {
@@ -130,9 +132,18 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
     };
   }, [handleSkipToEnd, setSkipToEnd]);
 
+  useEffect(() => {
+    if (outerContainerRef.current !== null) {
+      setPlayerContainerRef(outerContainerRef.current);
+    }
+    return () => {
+      setPlayerContainerRef(null);
+    };
+  }, [setPlayerContainerRef]);
+
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6">
-      <div className="relative aspect-video w-full">
+      <div ref={outerContainerRef} className="relative aspect-video w-full">
         <div ref={containerRef} className="absolute inset-0 h-full w-full" />
         {!playerReady && error === null && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">

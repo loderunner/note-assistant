@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { useVideoPlayer } from '../../video-player-context';
 
 import { BulletPointsList } from './bullet-points-list';
 import { ReviewActions } from './review-actions';
@@ -22,6 +24,7 @@ type LoadingState =
  * Only supports videos with official YouTube transcripts.
  */
 export function ReviewData({ videoId }: ReviewDataProps) {
+  const { playerContainerRef } = useVideoPlayer();
   const [state, setState] = useState<LoadingState>({
     status: 'loading',
     step: 'transcript',
@@ -85,6 +88,22 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     processVideo();
   }, [videoId]);
 
+  const scrolledRef = useRef(false);
+  const listRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (state.status === 'success') {
+      if (playerContainerRef !== null && !scrolledRef.current) {
+        const bounds = playerContainerRef.getBoundingClientRect();
+        const scrollTop = window.scrollY + bounds.bottom;
+        window.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth',
+        });
+        scrolledRef.current = true;
+      }
+    }
+  }, [state.status, playerContainerRef]);
+
   if (state.status === 'loading') {
     const messages = {
       transcript: 'Récupération de la transcription...',
@@ -118,7 +137,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
 
   return (
     <>
-      <BulletPointsList points={state.points} />
+      <BulletPointsList ref={listRef} points={state.points} />
       <ReviewActions />
     </>
   );

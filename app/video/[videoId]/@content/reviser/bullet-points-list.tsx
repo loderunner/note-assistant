@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { type Ref, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type BulletPointsListProps = {
   points: string[];
+  ref?: Ref<HTMLUListElement>;
 };
 
-export function BulletPointsList({ points }: BulletPointsListProps) {
+export function BulletPointsList({ points, ref }: BulletPointsListProps) {
   const [checkedStates, setCheckedStates] = useState<boolean[]>(
     new Array(points.length).fill(false),
   );
@@ -21,7 +22,7 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
   };
 
   return (
-    <ul className="w-full max-w-4xl space-y-4">
+    <ul ref={ref} className="w-full max-w-4xl space-y-4">
       {points.map((point, index) => {
         const checked = checkedStates[index];
         const delay = index * 100;
@@ -35,14 +36,15 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
             style={{
               transitionDelay: `${delay}ms`,
             }}
+            onClick={() => toggleCheck(index)}
           >
             <button
-              className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
-              style={{
-                borderColor: checked ? '#10b981' : 'currentColor',
-                backgroundColor: checked ? '#10b981' : 'transparent',
-              }}
-              onClick={() => toggleCheck(index)}
+              className={twMerge(
+                'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+                checked
+                  ? 'border-emerald-500 bg-emerald-500'
+                  : 'border-current bg-transparent',
+              )}
             >
               {checked && (
                 <svg
@@ -60,7 +62,9 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
                 </svg>
               )}
             </button>
-            <p className="flex-1 text-gray-800 dark:text-gray-200">{point}</p>
+            <p className="flex-1 text-gray-800 select-none dark:text-gray-200">
+              {point}
+            </p>
           </li>
         );
       })}
