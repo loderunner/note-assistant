@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 type ReviewContentProps = {
   /** Content to render in the main area (typically ReviewData wrapped in Suspense) */
@@ -12,24 +12,9 @@ type ReviewContentProps = {
  * Accepts children to allow Server Components to be passed through.
  */
 export function ReviewContent({ children }: ReviewContentProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setMounted(true);
-    }, 0);
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center bg-white px-4 py-8 transition-opacity duration-300 dark:bg-black ${
-        mounted ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <h1 className="mb-8 text-center text-2xl font-semibold text-black dark:text-zinc-50 scale-[0.8] -translate-y-5">
+    <main className="flex min-h-screen flex-col items-center bg-white px-4 py-8 opacity-100 transition-opacity duration-300 dark:bg-black starting:opacity-0">
+      <h1 className="mb-8 -translate-y-5 scale-[0.8] text-center text-2xl font-semibold text-black dark:text-zinc-50">
         Notix
       </h1>
 
@@ -40,12 +25,7 @@ export function ReviewContent({ children }: ReviewContentProps) {
         </div>
       </div>
 
-      <p
-        className={`mb-8 text-center text-lg text-gray-700 transition-all duration-300 dark:text-gray-300 ${
-          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-        }`}
-        style={{ transitionDelay: '200ms' }}
-      >
+      <p className="mb-8 translate-y-0 text-center text-lg text-gray-700 opacity-100 transition-all delay-200 duration-300 dark:text-gray-300 starting:translate-y-5 starting:opacity-0">
         Comparez vos notes et vérifiez que vous avez bien tous les points
         importants
       </p>

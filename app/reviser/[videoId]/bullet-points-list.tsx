@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 type BulletPointsListProps = {
   points: string[];
@@ -26,9 +27,12 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
         return (
           <li
             key={index}
-            className={`flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all duration-250 ease-out dark:border-gray-700 dark:bg-gray-900 ${
-              checked ? 'translate-x-4 opacity-50' : 'translate-x-0 opacity-100'
-            }`}
+            className={twMerge(
+              'flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all duration-250 ease-out dark:border-gray-700 dark:bg-gray-900',
+              checked
+                ? 'translate-x-4 opacity-50'
+                : 'translate-x-0 opacity-100',
+            )}
           >
             <button
               className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
