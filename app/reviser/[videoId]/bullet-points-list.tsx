@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'motion/react';
 import { useState } from 'react';
 
 type BulletPointsListProps = {
@@ -21,28 +20,15 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
   };
 
   return (
-    <motion.ul
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl space-y-4"
-      initial={{ opacity: 0, y: 20 }}
-      transition={{ delay: 0.3, staggerChildren: 0.1 }}
-    >
+    <ul className="w-full max-w-4xl space-y-4">
       {points.map((point, index) => {
         const checked = checkedStates[index];
         return (
-          <motion.li
+          <li
             key={index}
-            animate={{
-              opacity: checked ? 0.5 : 1,
-              x: checked ? 16 : 0,
-            }}
-            className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
-            initial={{ opacity: 0, x: -20 }}
-            transition={{
-              delay: checked ? 0 : 0.3 + index * 0.1,
-              duration: 0.25,
-              ease: 'easeOut',
-            }}
+            className={`flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all duration-250 ease-out dark:border-gray-700 dark:bg-gray-900 ${
+              checked ? 'translate-x-4 opacity-50' : 'translate-x-0 opacity-100'
+            }`}
           >
             <button
               className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
@@ -53,11 +39,9 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
               onClick={() => toggleCheck(index)}
             >
               {checked && (
-                <motion.svg
-                  animate={{ scale: 1 }}
-                  className="h-3 w-3 text-white"
+                <svg
+                  className="h-3 w-3 scale-100 text-white transition-transform duration-200"
                   fill="none"
-                  initial={{ scale: 0 }}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -67,13 +51,13 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
                     strokeLinejoin="round"
                     strokeWidth={3}
                   />
-                </motion.svg>
+                </svg>
               )}
             </button>
             <p className="flex-1 text-gray-800 dark:text-gray-200">{point}</p>
-          </motion.li>
+          </li>
         );
       })}
-    </motion.ul>
+    </ul>
   );
 }

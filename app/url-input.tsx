@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
@@ -12,8 +11,19 @@ export function UrlInput() {
   const [url, setUrl] = useState('');
   const [state, setState] = useState<UrlInputState>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -31,6 +41,7 @@ export function UrlInput() {
       setTimeout(() => {
         setState('idle');
         setErrorMessage('');
+        setShowError(false);
       }, 0);
       return;
     }
@@ -50,6 +61,7 @@ export function UrlInput() {
         setErrorMessage(
           'URL YouTube invalide. Veuillez entrer une URL valide.',
         );
+        setShowError(true);
       }, 1000);
     }
 
@@ -76,40 +88,36 @@ export function UrlInput() {
     } else if (trimmedUrl.length > 0) {
       setState('error');
       setErrorMessage('URL YouTube invalide. Veuillez entrer une URL valide.');
+      setShowError(true);
     } else {
       setState('idle');
       setErrorMessage('');
+      setShowError(false);
     }
-  };
-
-  const inputVariants = {
-    idle: { opacity: 1 },
-    error: { opacity: 1 },
-    validating: { opacity: 0.7 },
-    exit: { opacity: 0, y: -20 },
   };
 
   return (
     <div className="w-full max-w-2xl">
       <form className="flex flex-col items-center" onSubmit={handleSubmit}>
         <div className="relative w-full">
-          <motion.input
-            animate={state}
-            className={`w-full rounded-lg border-2 px-4 py-3 pr-12 text-lg transition-colors ${
+          <input
+            className={`w-full rounded-lg border-2 px-4 py-3 pr-12 text-lg transition-all ${
               state === 'error'
                 ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20 focus:outline-none'
                 : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+            } ${
+              state === 'validating' ? 'opacity-70' : 'opacity-100'
             }`}
             disabled={state === 'validating'}
             placeholder="https://youtube.com/watch?v=..."
             type="text"
             value={url}
-            variants={inputVariants}
             onChange={(e) => {
               setUrl(e.target.value);
               if (state === 'error') {
                 setState('idle');
                 setErrorMessage('');
+                setShowError(false);
               }
             }}
             onKeyDown={(e) => {
@@ -122,40 +130,31 @@ export function UrlInput() {
           {url.trim().length > 0 && (
             <div className="absolute top-1/2 right-4 -translate-y-1/2">
               {state === 'validating' ? (
-                <motion.div
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-gray-600 dark:border-t-blue-400"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 opacity-100 scale-100 transition-all dark:border-gray-600 dark:border-t-blue-400" />
               ) : (
-                <motion.div
-                  animate={{ opacity: 1 }}
-                  className="h-2 w-2 rounded-full bg-gray-400 dark:bg-gray-500"
-                  initial={{ opacity: 0 }}
-                />
+                <div className="h-2 w-2 rounded-full bg-gray-400 opacity-100 transition-opacity dark:bg-gray-500" />
               )}
             </div>
           )}
         </div>
         <div className="mt-4 flex min-h-12 flex-col items-center justify-start">
-          {state === 'error' && (
-            <motion.p
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-2 text-sm text-red-600 dark:text-red-400"
-              exit={{ opacity: 0, y: -10 }}
-              initial={{ opacity: 0, y: -10 }}
+          {showError && (
+            <p
+              className={`mb-2 text-sm text-red-600 transition-all dark:text-red-400 ${
+                showError ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+              }`}
             >
               {errorMessage}
-            </motion.p>
+            </p>
           )}
-          <motion.p
-            animate={{ opacity: 1 }}
-            className="text-center text-sm text-gray-600 dark:text-gray-400"
-            initial={{ opacity: 0 }}
-            transition={{ delay: 0.2 }}
+          <p
+            className={`text-center text-sm text-gray-600 transition-opacity dark:text-gray-400 ${
+              mounted ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ transitionDelay: '200ms' }}
           >
             Entrez une URL YouTube
-          </motion.p>
+          </p>
         </div>
       </form>
     </div>

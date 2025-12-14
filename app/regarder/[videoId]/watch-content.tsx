@@ -1,38 +1,39 @@
 'use client';
 
-import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 
 import { VideoPlayer } from './video-player';
-
-const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0, y: -50 },
-};
 
 type WatchContentProps = {
   videoId: string;
 };
 
 export function WatchContent({ videoId }: WatchContentProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
-    <motion.main
-      animate="animate"
-      className="flex min-h-screen flex-col items-center bg-white px-4 py-8 dark:bg-black"
-      exit="exit"
-      initial="initial"
-      transition={{ duration: 0.3 }}
-      variants={pageVariants}
+    <main
+      className={`flex min-h-screen flex-col items-center bg-white px-4 py-8 transition-opacity duration-300 dark:bg-black ${
+        mounted ? 'opacity-100' : 'opacity-0'
+      }`}
     >
-      <motion.h1
-        animate={{ scale: 0.8, y: -20 }}
-        className="mb-8 text-center text-[46px] font-bold text-black dark:text-zinc-50"
-        initial={{ scale: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+      <h1
+        className={`mb-8 text-center text-[46px] font-bold text-black transition-all duration-400 dark:text-zinc-50 ${
+          mounted ? 'scale-[0.8] -translate-y-5' : 'scale-100 translate-y-0'
+        }`}
       >
         Notix
-      </motion.h1>
+      </h1>
       <VideoPlayer videoId={videoId} />
-    </motion.main>
+    </main>
   );
 }

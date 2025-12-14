@@ -1,40 +1,33 @@
 'use client';
 
-import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 
 import { UrlInput } from './url-input';
 
-const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
-const titleVariants = {
-  initial: { scale: 1, y: 0 },
-  animate: { scale: 1, y: 0 },
-  exit: { scale: 0.8, y: -20 },
-};
-
 export function HomeContent() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
-    <motion.main
-      animate="animate"
-      className="relative flex h-screen items-center justify-center bg-white px-4 dark:bg-black"
-      exit="exit"
-      initial="initial"
-      transition={{ duration: 0.3 }}
-      variants={pageVariants}
+    <main
+      className={`relative flex h-screen items-center justify-center bg-white px-4 transition-opacity duration-300 dark:bg-black ${
+        mounted ? 'opacity-100' : 'opacity-0'
+      }`}
     >
       <div className="relative flex w-full flex-col items-center">
-        <motion.h1
-          className="absolute bottom-full mb-12 text-center text-6xl font-extrabold text-black dark:text-zinc-50"
-          variants={titleVariants}
-        >
+        <h1 className="absolute bottom-full mb-12 text-center text-6xl font-extrabold text-black dark:text-zinc-50 scale-100 translate-y-0">
           Notix
-        </motion.h1>
+        </h1>
         <UrlInput />
       </div>
-    </motion.main>
+    </main>
   );
 }

@@ -1,13 +1,6 @@
 'use client';
 
-import { motion } from 'motion/react';
-import { type ReactNode } from 'react';
-
-const pageVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-};
+import { useEffect, useState, type ReactNode } from 'react';
 
 type ReviewContentProps = {
   /** Content to render in the main area (typically ReviewData wrapped in Suspense) */
@@ -19,22 +12,26 @@ type ReviewContentProps = {
  * Accepts children to allow Server Components to be passed through.
  */
 export function ReviewContent({ children }: ReviewContentProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
-    <motion.main
-      animate="animate"
-      className="flex min-h-screen flex-col items-center bg-white px-4 py-8 dark:bg-black"
-      exit="exit"
-      initial="initial"
-      transition={{ duration: 0.3 }}
-      variants={pageVariants}
+    <main
+      className={`flex min-h-screen flex-col items-center bg-white px-4 py-8 transition-opacity duration-300 dark:bg-black ${
+        mounted ? 'opacity-100' : 'opacity-0'
+      }`}
     >
-      <motion.h1
-        animate={{ scale: 0.8, y: -20 }}
-        className="mb-8 text-center text-2xl font-semibold text-black dark:text-zinc-50"
-        initial={{ scale: 0.8, y: -20 }}
-      >
+      <h1 className="mb-8 text-center text-2xl font-semibold text-black dark:text-zinc-50 scale-[0.8] -translate-y-5">
         Notix
-      </motion.h1>
+      </h1>
 
       <div className="mb-6 w-full max-w-4xl">
         <div className="mb-4 h-px bg-gray-300 dark:bg-gray-700" />
@@ -43,17 +40,17 @@ export function ReviewContent({ children }: ReviewContentProps) {
         </div>
       </div>
 
-      <motion.p
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 text-center text-lg text-gray-700 dark:text-gray-300"
-        initial={{ opacity: 0, y: 20 }}
-        transition={{ delay: 0.2 }}
+      <p
+        className={`mb-8 text-center text-lg text-gray-700 transition-all duration-300 dark:text-gray-300 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+        }`}
+        style={{ transitionDelay: '200ms' }}
       >
         Comparez vos notes et vérifiez que vous avez bien tous les points
         importants
-      </motion.p>
+      </p>
 
       {children}
-    </motion.main>
+    </main>
   );
 }
