@@ -1,5 +1,3 @@
-'use client';
-
 import { UrlInput } from './url-input';
 
 export function HomeContent() {
