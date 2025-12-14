@@ -24,15 +24,17 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
     <ul className="w-full max-w-4xl space-y-4">
       {points.map((point, index) => {
         const checked = checkedStates[index];
+        const delay = index * 100;
         return (
           <li
             key={index}
             className={twMerge(
-              'flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all duration-250 ease-out dark:border-gray-700 dark:bg-gray-900',
-              checked
-                ? 'translate-x-4 opacity-50'
-                : 'translate-x-0 opacity-100',
+              'flex translate-y-0 items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 opacity-100 transition-all duration-500 ease-out dark:border-gray-700 dark:bg-gray-900 starting:translate-y-4 starting:opacity-0',
+              checked ? 'translate-x-4 opacity-50' : 'translate-x-0',
             )}
+            style={{
+              transitionDelay: `${delay}ms`,
+            }}
           >
             <button
               className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors"
