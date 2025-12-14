@@ -18,10 +18,10 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: 'Notix',
-  description: "Application d'entraînement à la prise de notes",
+  description: 'Entraîne-toi à la prise de notes',
   openGraph: {
     title: 'Notix',
-    description: "Application d'entraînement à la prise de notes",
+    description: 'Entraîne-toi à la prise de notes',
     type: 'website',
     locale: 'fr_FR',
     siteName: 'Notix',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Notix',
-    description: "Application d'entraînement à la prise de notes",
+    description: 'Entraîne-toi à la prise de notes',
   },
 };
 

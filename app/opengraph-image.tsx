@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt =
-  'Notix - Application d&apos;entraînement à la prise de notes';
+export const alt = 'Notix - Entraîne-toi à la prise de notes';
 export const contentType = 'image/png';
 export const size = {
   width: 1200,
@@ -112,7 +111,7 @@ export default async function Image() {
             fontFamily: 'DM Sans',
           }}
         >
-          Application d&apos;entraînement à la prise de notes
+          Entraîne-toi à la prise de notes
         </p>
       </div>
     </div>,
