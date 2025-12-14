@@ -119,7 +119,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
   return (
     <>
       <BulletPointsList points={state.points} />
-      <ReviewActions videoId={videoId} />
+      <ReviewActions />
     </>
   );
 }

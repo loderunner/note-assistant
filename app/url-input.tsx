@@ -44,7 +44,7 @@ export function UrlInput() {
         setState('validating');
       }, 0);
       timeoutRef.current = setTimeout(() => {
-        router.push(`/regarder/${videoId}`);
+        router.push(`/video/${videoId}`);
       }, 1000);
     } else {
       timeoutRef.current = setTimeout(() => {
@@ -74,7 +74,7 @@ export function UrlInput() {
     if (videoId !== null) {
       setState('validating');
       timeoutRef.current = setTimeout(() => {
-        router.push(`/regarder/${videoId}`);
+        router.push(`/video/${videoId}`);
       }, 1000);
     } else if (trimmedUrl.length > 0) {
       setState('error');

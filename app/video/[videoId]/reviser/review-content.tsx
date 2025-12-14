@@ -13,11 +13,7 @@ type ReviewContentProps = {
  */
 export function ReviewContent({ children }: ReviewContentProps) {
   return (
-    <main className="flex min-h-screen flex-col items-center bg-white px-4 py-8 opacity-100 transition-opacity duration-300 dark:bg-black starting:opacity-0">
-      <h1 className="mb-8 -translate-y-5 scale-[0.8] text-center text-2xl font-semibold text-black dark:text-zinc-50">
-        Notix
-      </h1>
-
+    <div className="flex w-full flex-col items-center">
       <div className="mb-6 w-full max-w-4xl">
         <div className="mb-4 h-px bg-gray-300 dark:bg-gray-700" />
         <div className="ml-auto w-fit rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
@@ -30,7 +26,7 @@ export function ReviewContent({ children }: ReviewContentProps) {
         importants
       </p>
 
-      {children}
-    </main>
+      <div>{children}</div>
+    </div>
   );
 }

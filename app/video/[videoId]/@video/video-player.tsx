@@ -48,7 +48,7 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
           },
           onStateChange: (event: { data: number }) => {
             if (event.data === yt.PlayerState.ENDED) {
-              router.push(`/reviser/${videoId}`);
+              router.push(`/video/${videoId}/reviser`);
             }
           },
         },

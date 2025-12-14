@@ -1,5 +1,5 @@
-import { ReviewContent } from './review-content';
-import { ReviewData } from './review-data';
+import { ReviewContent } from '../../reviser/review-content';
+import { ReviewData } from '../../reviser/review-data';
 
 type PageProps = {
   params: Promise<{ videoId: string }>;
