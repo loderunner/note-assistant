@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/openai": "3.0.0-beta.95",
     "ai": "6.0.0-beta.148",
+    "canvas-confetti": "1.9.4",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.1",
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -34,6 +36,7 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.49.0"
+    "typescript-eslint": "^8.49.0",
+    "vercel": "50.0.1"
   }
 }

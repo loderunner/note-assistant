@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useVideoPlayer } from '../../video-player-context';
 
 import { BulletPointsList } from './bullet-points-list';
+import { Celebration } from './celebration';
+import { ProgressGauge } from './progress-gauge';
 import { ReviewActions } from './review-actions';
 
 import { type Transcript, getTranscript } from '@/app/youtube/client';
@@ -90,8 +92,11 @@ export function ReviewData({ videoId }: ReviewDataProps) {
 
   const scrolledRef = useRef(false);
   const listRef = useRef<HTMLUListElement>(null);
+  const [checkedStates, setCheckedStates] = useState<boolean[]>([]);
+
   useEffect(() => {
     if (state.status === 'success') {
+      setCheckedStates(new Array(state.points.length).fill(false));
       if (playerContainerRef !== null && !scrolledRef.current) {
         const bounds = playerContainerRef.getBoundingClientRect();
         const scrollTop = window.scrollY + bounds.bottom;
@@ -102,7 +107,23 @@ export function ReviewData({ videoId }: ReviewDataProps) {
         scrolledRef.current = true;
       }
     }
-  }, [state.status, playerContainerRef]);
+    // @ts-expect-error - state.points is only available when state.status is 'success'
+  }, [state.status, state.points?.length, playerContainerRef]);
+
+  const handleToggle = (index: number) => {
+    setCheckedStates((prev) => {
+      const newState = [...prev];
+      newState[index] = !newState[index];
+      return newState;
+    });
+  };
+
+  const completionPct =
+    checkedStates.length > 0
+      ? Math.round(
+          (checkedStates.filter(Boolean).length / checkedStates.length) * 100,
+        )
+      : 0;
 
   if (state.status === 'loading') {
     const messages = {
@@ -137,7 +158,16 @@ export function ReviewData({ videoId }: ReviewDataProps) {
 
   return (
     <>
-      <BulletPointsList ref={listRef} points={state.points} />
+      <div className="relative flex items-start gap-4">
+        <ProgressGauge completionPct={completionPct} />
+        <BulletPointsList
+          ref={listRef}
+          checkedStates={checkedStates}
+          points={state.points}
+          onToggleAction={handleToggle}
+        />
+      </div>
+      <Celebration trigger={completionPct === 100} />
       <ReviewActions />
     </>
   );

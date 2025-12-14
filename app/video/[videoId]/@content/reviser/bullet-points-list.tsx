@@ -1,26 +1,20 @@
 'use client';
 
-import { type Ref, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type BulletPointsListProps = {
   points: string[];
-  ref?: Ref<HTMLUListElement>;
+  checkedStates: boolean[];
+  onToggleAction: (index: number) => void;
+  ref?: React.Ref<HTMLUListElement>;
 };
 
-export function BulletPointsList({ points, ref }: BulletPointsListProps) {
-  const [checkedStates, setCheckedStates] = useState<boolean[]>(
-    new Array(points.length).fill(false),
-  );
-
-  const toggleCheck = (index: number) => {
-    setCheckedStates((prev) => {
-      const newState = [...prev];
-      newState[index] = !newState[index];
-      return newState;
-    });
-  };
-
+export function BulletPointsList({
+  points,
+  checkedStates,
+  onToggleAction,
+  ref,
+}: BulletPointsListProps) {
   return (
     <ul ref={ref} className="w-full max-w-4xl space-y-4">
       {points.map((point, index) => {
@@ -36,7 +30,7 @@ export function BulletPointsList({ points, ref }: BulletPointsListProps) {
             style={{
               transitionDelay: `${delay}ms`,
             }}
-            onClick={() => toggleCheck(index)}
+            onClick={() => onToggleAction(index)}
           >
             <button
               className={twMerge(
