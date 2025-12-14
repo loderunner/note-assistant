@@ -26,7 +26,7 @@ const summaryCache = new Map<string, Promise<BulletPointsResult>>();
 export async function generateBulletPoints(
   transcript: string,
   videoId: string,
-  videoDurationMinutes: number = 10,
+  videoDurationMinutes: number,
 ): Promise<BulletPointsResult> {
   if (summaryCache.has(videoId)) {
     return summaryCache.get(videoId)!;
