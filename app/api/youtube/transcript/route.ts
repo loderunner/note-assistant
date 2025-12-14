@@ -17,6 +17,32 @@ type Transcript = {
 };
 
 /**
+ * Cached Innertube instance to avoid creating new sessions on every request.
+ * Creating a new instance per request causes YouTube's API to return
+ * "Precondition check failed" errors due to rapid session creation from the
+ * same IP being flagged as bot-like behavior.
+ */
+let innertubeInstance: Innertube | null = null;
+let innertubePromise: Promise<Innertube> | null = null;
+
+async function getInnertube(): Promise<Innertube> {
+  if (innertubeInstance !== null) {
+    return innertubeInstance;
+  }
+
+  // Avoid race conditions: if we're already creating an instance, wait for it
+  if (innertubePromise !== null) {
+    return innertubePromise;
+  }
+
+  innertubePromise = Innertube.create();
+  innertubeInstance = await innertubePromise;
+  innertubePromise = null;
+
+  return innertubeInstance;
+}
+
+/**
  * API route to get official transcript for a YouTube video.
  * Runs server-side to avoid CORS issues.
  */
@@ -30,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.info('Fetching transcript for video', videoId);
-    const yt = await Innertube.create();
+    const yt = await getInnertube();
     const video = await yt.getInfo(videoId);
     const transcript = await video.getTranscript();
 

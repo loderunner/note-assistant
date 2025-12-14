@@ -67,3 +67,4 @@ export function BulletPointsList({ points }: BulletPointsListProps) {
     </motion.ul>
   );
 }
+

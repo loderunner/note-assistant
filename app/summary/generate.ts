@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { generateObject } from 'ai';
+import { Output, generateText } from 'ai';
 import { z } from 'zod';
 
 const bulletPointsSchema = z.object({
@@ -8,9 +8,7 @@ const bulletPointsSchema = z.object({
     .describe('Liste des points clés à retenir de la vidéo'),
 });
 
-type BulletPointsResult = {
-  points: string[];
-};
+type BulletPointsResult = z.infer<typeof bulletPointsSchema>;
 
 const summaryCache = new Map<string, Promise<BulletPointsResult>>();
 
@@ -50,11 +48,11 @@ Important: Réponds dans la même langue que la transcription. Si la transcripti
 Transcription:
 ${transcript}`;
 
-  const promise = generateObject({
-    model: openai('gpt-4o-mini'),
-    schema: bulletPointsSchema,
+  const promise = generateText({
+    model: openai('gpt-4.1-mini'),
+    output: Output.object({ schema: bulletPointsSchema }),
     prompt,
-  }).then((result) => result.object);
+  }).then(({ output }) => output);
 
   summaryCache.set(videoId, promise);
   return promise;

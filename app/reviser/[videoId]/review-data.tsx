@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 
-import { getTranscript, type Transcript } from '@/app/youtube/client';
-
 import { BulletPointsList } from './bullet-points-list';
 import { ReviewActions } from './review-actions';
+
+import { type Transcript, getTranscript } from '@/app/youtube/client';
 
 type ReviewDataProps = {
   /** The YouTube video ID to fetch and display bullet points for */
@@ -35,7 +35,9 @@ export function ReviewData({ videoId }: ReviewDataProps) {
         const transcript: Transcript | null = await getTranscript(videoId);
 
         if (transcript === null) {
-          throw new Error('Cette vidéo n\'a pas de transcription disponible. Seules les vidéos avec transcription officielle sont supportées.');
+          throw new Error(
+            "Cette vidéo n'a pas de transcription disponible. Seules les vidéos avec transcription officielle sont supportées.",
+          );
         }
 
         // Generate bullet points
@@ -75,9 +77,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
         setState({
           status: 'error',
           error:
-            error instanceof Error
-              ? error.message
-              : 'Une erreur est survenue',
+            error instanceof Error ? error.message : 'Une erreur est survenue',
         });
       }
     }
@@ -95,7 +95,9 @@ export function ReviewData({ videoId }: ReviewDataProps) {
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
         <div className="text-center">
           <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-          <p className="text-gray-600 dark:text-gray-400">{messages[state.step]}</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            {messages[state.step]}
+          </p>
         </div>
       </div>
     );
