@@ -1,37 +1,73 @@
 'use client';
 
-export type Segment = {
-  text: string;
-  start: number;
-  duration: number;
-};
+import {
+  type Segment,
+  type Transcript,
+  type TranscriptErrorType,
+  errorResponseSchema,
+  successResponseSchema,
+} from '@/app/api/youtube/transcript/route';
 
-export type Transcript = {
-  segments: Segment[];
-  fullText: string;
-  language?: string;
-};
+export type { Segment, Transcript, TranscriptErrorType };
+
+/**
+ * Result of a transcript fetch attempt.
+ */
+export type TranscriptResult =
+  | { success: true; transcript: Transcript }
+  | { success: false; errorType: TranscriptErrorType };
 
 /**
  * Tries to get the official transcript for a YouTube video.
  * Calls server-side API to avoid CORS issues.
  *
  * @param videoId - The YouTube video ID
- * @returns The transcript segments and full text, or null if not available
+ * @returns A result object indicating success with transcript data,
+ *          or failure with an error type.
+ *
+ * @example
+ * const result = await getTranscript('dQw4w9WgXcQ');
+ * if (result.success) {
+ *   console.log(result.transcript.fullText);
+ * } else if (result.errorType === 'no_transcript') {
+ *   console.log('This video has no transcript');
+ * } else {
+ *   console.log('Failed to fetch, try again');
+ * }
  */
 export async function getTranscript(
   videoId: string,
-): Promise<Transcript | null> {
+): Promise<TranscriptResult> {
   try {
     const response = await fetch(`/api/youtube/transcript?videoId=${videoId}`);
     if (!response.ok) {
-      return null;
+      return { success: false, errorType: 'fetch_failed' };
     }
 
     const data = await response.json();
-    return data.transcript;
+
+    // Validate response against schema
+    const errorParseResult = errorResponseSchema.safeParse(data);
+    if (errorParseResult.success) {
+      return {
+        success: false,
+        errorType: errorParseResult.data.error,
+      };
+    }
+
+    const successParseResult = successResponseSchema.safeParse(data);
+    if (successParseResult.success) {
+      return {
+        success: true,
+        transcript: successParseResult.data.transcript,
+      };
+    }
+
+    // If neither schema matches, treat as fetch failure
+    console.error('Invalid response format from transcript API:', data);
+    return { success: false, errorType: 'fetch_failed' };
   } catch (error) {
     console.error('Error fetching transcript:', error);
-    return null;
+    return { success: false, errorType: 'fetch_failed' };
   }
 }

@@ -18,24 +18,23 @@ const summaryCache = new Map<string, Promise<BulletPointsResult>>();
  *
  * @param transcript - The full transcript text
  * @param videoId - The video ID for caching
- * @param videoDurationMinutes - Approximate video duration in minutes (for adaptive bullet count)
+ * @param duration - Video duration in milliseconds (for adaptive bullet count)
  * @returns Array of key bullet points
  */
 export async function generateBulletPoints(
   transcript: string,
   videoId: string,
-  videoDurationMinutes: number,
+  duration: number,
 ): Promise<BulletPointsResult> {
   if (summaryCache.has(videoId)) {
     return summaryCache.get(videoId)!;
   }
 
-  const targetCount = Math.max(
-    5,
-    Math.min(12, Math.ceil(videoDurationMinutes)),
-  );
+  // Convert milliseconds to minutes for bullet count calculation
+  const durationMinutes = Math.ceil(duration / 60000);
+  const targetCount = Math.max(5, Math.min(12, Math.ceil(durationMinutes / 2)));
 
-  const prompt = `Analyse cette transcription de vidéo et extrais les ${targetCount} points clés les plus importants que l'étudiant devrait avoir notés.
+  const prompt = `Analyse cette transcription de vidéo et extrais les ${targetCount} points clés les plus importants que l'étudiant devrait avoir notés. Les points doivent rester courts et concis.
 
 Points à retenir:
 - Les faits importants et informations essentielles

@@ -8,43 +8,62 @@ const requestBodySchema = z.object({
   transcript: z.string(),
   /** The YouTube video ID. */
   videoId: z.string(),
-  /** The duration of the video in minutes. */
-  videoDurationMinutes: z.number(),
+  /** The duration of the video in milliseconds. */
+  duration: z.number(),
 });
+
+const successResponseSchema = z.object({
+  /** Array of bullet points generated from the transcript. */
+  points: z.array(z.string()),
+});
+
+const errorResponseSchema = z.object({
+  /** Error message. */
+  error: z.string(),
+  /** Optional error details. */
+  details: z.unknown().optional(),
+});
+
+export type GenerateBulletsRequest = z.infer<typeof requestBodySchema>;
+export type GenerateBulletsSuccessResponse = z.infer<
+  typeof successResponseSchema
+>;
+export type GenerateBulletsErrorResponse = z.infer<typeof errorResponseSchema>;
+
+export { errorResponseSchema, successResponseSchema };
 
 /**
  * API route to generate bullet points from a transcript.
  */
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+): Promise<
+  NextResponse<GenerateBulletsSuccessResponse | GenerateBulletsErrorResponse>
+> {
   try {
     const body = await request.json();
     const parseResult = requestBodySchema.safeParse(body);
 
     if (!parseResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request body',
-          details: z.prettifyError(parseResult.error),
-        },
-        { status: 400 },
-      );
+      const errorResponse = errorResponseSchema.parse({
+        error: 'Invalid request body',
+        details: z.prettifyError(parseResult.error),
+      });
+      return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    const { transcript, videoId, videoDurationMinutes } = parseResult.data;
+    const { transcript, videoId, duration } = parseResult.data;
 
     console.info('Generating bullet points for video', videoId);
-    const result = await generateBulletPoints(
-      transcript,
-      videoId,
-      videoDurationMinutes,
-    );
+    const result = await generateBulletPoints(transcript, videoId, duration);
 
-    return NextResponse.json(result);
+    const validatedResult = successResponseSchema.parse(result);
+    return NextResponse.json(validatedResult);
   } catch (error) {
     console.error('Error in generate-bullets API route:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    const errorResponse = errorResponseSchema.parse({
+      error: 'Internal server error',
+    });
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }

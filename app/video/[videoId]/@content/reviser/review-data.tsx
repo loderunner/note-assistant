@@ -9,16 +9,25 @@ import { Celebration } from './celebration';
 import { ProgressGauge } from './progress-gauge';
 import { ReviewActions } from './review-actions';
 
-import { type Transcript, getTranscript } from '@/app/youtube/client';
+import { successResponseSchema } from '@/app/api/generate-bullets/route';
+import { getTranscript } from '@/app/youtube/client';
 
 type ReviewDataProps = {
   /** The YouTube video ID to fetch and display bullet points for */
   videoId: string;
 };
 
+/**
+ * Error types for the review data component.
+ * - `no_transcript`: The video does not have a transcript available.
+ * - `fetch_failed`: A transient error occurred (e.g., YouTube rate limiting).
+ * - `generation_failed`: Failed to generate bullet points from transcript.
+ */
+type ErrorType = 'no_transcript' | 'fetch_failed' | 'generation_failed';
+
 type LoadingState =
   | { status: 'loading'; step: 'transcript' | 'generating' }
-  | { status: 'error'; error: string }
+  | { status: 'error'; errorType: ErrorType }
   | { status: 'success'; points: string[] };
 
 /**
@@ -31,34 +40,25 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     status: 'loading',
     step: 'transcript',
   });
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function processVideo() {
+      // Get official transcript
+      setState({ status: 'loading', step: 'transcript' });
+      const transcriptResult = await getTranscript(videoId);
+
+      if (!transcriptResult.success) {
+        setState({ status: 'error', errorType: transcriptResult.errorType });
+        return;
+      }
+
+      const { transcript } = transcriptResult;
+
+      // Generate bullet points
+      setState({ status: 'loading', step: 'generating' });
+
       try {
-        // Get official transcript
-        setState({ status: 'loading', step: 'transcript' });
-        const transcript: Transcript | null = await getTranscript(videoId);
-
-        if (transcript === null) {
-          throw new Error(
-            "Cette vidéo n'a pas de transcription disponible. Seules les vidéos avec transcription officielle sont supportées.",
-          );
-        }
-
-        // Generate bullet points
-        setState({ status: 'loading', step: 'generating' });
-
-        // Calculate video duration from transcript segments
-        const videoDurationMinutes =
-          transcript.segments.length > 0
-            ? Math.ceil(
-                (transcript.segments[transcript.segments.length - 1].start +
-                  transcript.segments[transcript.segments.length - 1]
-                    .duration) /
-                  60,
-              )
-            : 10;
-
         const bulletsResponse = await fetch('/api/generate-bullets', {
           method: 'POST',
           headers: {
@@ -67,28 +67,26 @@ export function ReviewData({ videoId }: ReviewDataProps) {
           body: JSON.stringify({
             transcript: transcript.fullText,
             videoId,
-            videoDurationMinutes,
+            duration: transcript.duration,
           }),
         });
 
         if (!bulletsResponse.ok) {
-          throw new Error('Failed to generate bullet points');
+          setState({ status: 'error', errorType: 'generation_failed' });
+          return;
         }
 
         const bulletsData = await bulletsResponse.json();
-        setState({ status: 'success', points: bulletsData.points });
+        const validatedData = successResponseSchema.parse(bulletsData);
+        setState({ status: 'success', points: validatedData.points });
       } catch (error) {
-        console.error('Error processing video:', error);
-        setState({
-          status: 'error',
-          error:
-            error instanceof Error ? error.message : 'Une erreur est survenue',
-        });
+        console.error('Error generating bullet points:', error);
+        setState({ status: 'error', errorType: 'generation_failed' });
       }
     }
 
     processVideo();
-  }, [videoId]);
+  }, [videoId, retryCount]);
 
   const scrolledRef = useRef(false);
   const listRef = useRef<HTMLUListElement>(null);
@@ -96,7 +94,9 @@ export function ReviewData({ videoId }: ReviewDataProps) {
 
   useEffect(() => {
     if (state.status === 'success') {
-      setCheckedStates(new Array(state.points.length).fill(false));
+      setTimeout(() => {
+        setCheckedStates(new Array(state.points.length).fill(false));
+      }, 0);
       if (playerContainerRef !== null && !scrolledRef.current) {
         const bounds = playerContainerRef.getBoundingClientRect();
         const scrollTop = window.scrollY + bounds.bottom;
@@ -157,14 +157,53 @@ export function ReviewData({ videoId }: ReviewDataProps) {
   }
 
   if (state.status === 'error') {
+    const errorMessages: Record<
+      ErrorType,
+      { emoji: string; title: string; message: string; retryable: boolean }
+    > = {
+      no_transcript: {
+        emoji: '📝',
+        title: 'Pas de transcription',
+        message:
+          "Cette vidéo n'a pas de transcription disponible. Seules les vidéos avec sous-titres officiels sont supportées.",
+        retryable: false,
+      },
+      fetch_failed: {
+        emoji: '🌐',
+        title: 'Erreur de connexion',
+        message:
+          'Impossible de récupérer la transcription depuis YouTube. Réessayez dans quelques instants.',
+        retryable: true,
+      },
+      generation_failed: {
+        emoji: '🤖',
+        title: 'Erreur de génération',
+        message:
+          "Une erreur s'est produite lors de la génération des points clés. Réessayez.",
+        retryable: true,
+      },
+    };
+
+    const { emoji, title, message, retryable } = errorMessages[state.errorType];
+
     return (
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
-        <div className="text-center">
-          <div className="mb-4 text-4xl">😅</div>
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 text-4xl">{emoji}</div>
           <p className="mb-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
-            Oups !
+            {title}
           </p>
-          <p className="text-stone-600 dark:text-stone-400">{state.error}</p>
+          <p className="mb-6 max-w-md text-stone-600 dark:text-stone-400">
+            {message}
+          </p>
+          {retryable && (
+            <button
+              className="rounded-full bg-linear-to-r from-rose-500 to-rose-600 px-6 py-2 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:from-rose-600 hover:to-rose-700 hover:shadow-xl active:scale-95"
+              onClick={() => setRetryCount((c) => c + 1)}
+            >
+              Réessayer
+            </button>
+          )}
         </div>
       </div>
     );
