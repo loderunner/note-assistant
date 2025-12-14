@@ -32,7 +32,7 @@ export async function generateBulletPoints(
 
   const targetCount = Math.max(
     5,
-    Math.min(12, Math.ceil(videoDurationMinutes / 2)),
+    Math.min(12, Math.ceil(videoDurationMinutes)),
   );
 
   const prompt = `Analyse cette transcription de vidéo et extrais les ${targetCount} points clés les plus importants que l'étudiant devrait avoir notés.
