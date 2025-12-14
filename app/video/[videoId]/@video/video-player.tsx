@@ -3,16 +3,19 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useVideoPlayer } from '../video-player-context';
+
 type VideoPlayerProps = {
   videoId: string;
 };
 
 export function VideoPlayer({ videoId }: VideoPlayerProps) {
-  const [playerReady, setPlayerReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const playerRef = useRef<{ destroy(): void } | null>(null);
+  const [playerReady, setPlayerReadyLocal] = useState(false);
+  const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { setPlayerReady, setSkipToEnd } = useVideoPlayer();
 
   const initializePlayer = useCallback(() => {
     if (containerRef.current === null || playerRef.current !== null) {
@@ -39,6 +42,7 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
         },
         events: {
           onReady: () => {
+            setPlayerReadyLocal(true);
             setPlayerReady(true);
             setError(null);
           },
@@ -57,7 +61,7 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
       console.error('Error initializing YouTube player:', err);
       setError('Impossible de charger la vidéo');
     }
-  }, [videoId, router]);
+  }, [videoId, router, setPlayerReady]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -100,9 +104,31 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
         }
         playerRef.current = null;
       }
+      setPlayerReadyLocal(false);
       setPlayerReady(false);
     };
-  }, [initializePlayer]);
+  }, [initializePlayer, setPlayerReady]);
+
+  const handleSkipToEnd = useCallback(() => {
+    if (playerRef.current === null) {
+      return;
+    }
+    try {
+      const duration = playerRef.current.getDuration();
+      if (duration > 0) {
+        playerRef.current.seekTo(duration, true);
+      }
+    } catch (err) {
+      console.error('Error skipping to end:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    setSkipToEnd(() => handleSkipToEnd);
+    return () => {
+      setSkipToEnd(null);
+    };
+  }, [handleSkipToEnd, setSkipToEnd]);
 
   return (
     <div className="flex w-full max-w-4xl flex-col items-center gap-6">
