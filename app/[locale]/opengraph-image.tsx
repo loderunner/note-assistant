@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { getTranslations } from 'next-intl/server';
 
 export const alt = 'Notix - Entraîne-toi à la prise de notes';
 export const contentType = 'image/png';
@@ -25,6 +26,7 @@ async function getFonts() {
 }
 
 export default async function Image() {
+  const t = await getTranslations('metadata');
   const { nunito, dmSans } = await getFonts();
 
   const fonts: Array<{
@@ -111,7 +113,7 @@ export default async function Image() {
             fontFamily: 'DM Sans',
           }}
         >
-          Entraîne-toi à la prise de notes
+          {t('description')}
         </p>
       </div>
     </div>,
