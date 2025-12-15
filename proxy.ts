@@ -16,6 +16,7 @@ export const config = {
     // - API routes
     // - _next (Next.js internals)
     // - static files (images, fonts, etc.)
-    '/((?!api|_next|.*\\..*).*)',
+    // - robots.txt (handled by Next.js metadata convention)
+    '/((?!api|_next|robots\\.txt|.*\\..*).*)',
   ],
 };
