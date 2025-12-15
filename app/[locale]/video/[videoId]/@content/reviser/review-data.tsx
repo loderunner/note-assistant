@@ -1,16 +1,17 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { useVideoPlayer } from '../../video-player-context';
 
 import { BulletPointsList } from './bullet-points-list';
 import { Celebration } from './celebration';
+import { fetchTranscript } from './fetch-transcript';
 import { ProgressGauge } from './progress-gauge';
 import { ReviewActions } from './review-actions';
 
 import { successResponseSchema } from '@/app/api/generate-bullets/route';
-import { getTranscript } from '@/app/youtube/client';
 
 type ReviewDataProps = {
   /** The YouTube video ID to fetch and display bullet points for */
@@ -35,6 +36,8 @@ type LoadingState =
  * Only supports videos with official YouTube transcripts.
  */
 export function ReviewData({ videoId }: ReviewDataProps) {
+  const t = useTranslations('review');
+  const locale = useLocale();
   const { playerContainerRef } = useVideoPlayer();
   const [state, setState] = useState<LoadingState>({
     status: 'loading',
@@ -46,7 +49,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     async function processVideo() {
       // Get official transcript
       setState({ status: 'loading', step: 'transcript' });
-      const transcriptResult = await getTranscript(videoId);
+      const transcriptResult = await fetchTranscript(videoId);
 
       if (!transcriptResult.success) {
         setState({ status: 'error', errorType: transcriptResult.errorType });
@@ -68,6 +71,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
             transcript: transcript.fullText,
             videoId,
             duration: transcript.duration,
+            locale,
           }),
         });
 
@@ -86,7 +90,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
     }
 
     processVideo();
-  }, [videoId, retryCount]);
+  }, [videoId, retryCount, locale]);
 
   const scrolledRef = useRef(false);
   const listRef = useRef<HTMLUListElement>(null);
@@ -126,11 +130,6 @@ export function ReviewData({ videoId }: ReviewDataProps) {
       : 0;
 
   if (state.status === 'loading') {
-    const messages = {
-      transcript: 'Récupération de la transcription...',
-      generating: 'Génération des points clés...',
-    };
-
     return (
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
         <div className="text-center">
@@ -149,7 +148,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
             />
           </div>
           <p className="text-stone-600 dark:text-stone-300">
-            {messages[state.step]}
+            {t(`loading.${state.step}`)}
           </p>
         </div>
       </div>
@@ -157,51 +156,31 @@ export function ReviewData({ videoId }: ReviewDataProps) {
   }
 
   if (state.status === 'error') {
-    const errorMessages: Record<
-      ErrorType,
-      { emoji: string; title: string; message: string; retryable: boolean }
-    > = {
-      no_transcript: {
-        emoji: '📝',
-        title: 'Pas de transcription',
-        message:
-          "Cette vidéo n'a pas de transcription disponible. Seules les vidéos avec sous-titres officiels sont supportées.",
-        retryable: false,
-      },
-      fetch_failed: {
-        emoji: '🌐',
-        title: 'Erreur de connexion',
-        message:
-          'Impossible de récupérer la transcription depuis YouTube. Réessayez dans quelques instants.',
-        retryable: true,
-      },
-      generation_failed: {
-        emoji: '🤖',
-        title: 'Erreur de génération',
-        message:
-          "Une erreur s'est produite lors de la génération des points clés. Réessayez.",
-        retryable: true,
-      },
+    const errorKeyMap: Record<ErrorType, string> = {
+      no_transcript: 'noTranscript',
+      fetch_failed: 'fetchFailed',
+      generation_failed: 'generationFailed',
     };
 
-    const { emoji, title, message, retryable } = errorMessages[state.errorType];
+    const errorKey = errorKeyMap[state.errorType];
+    const retryable = state.errorType !== 'no_transcript';
 
     return (
       <div className="flex w-full max-w-4xl items-center justify-center py-12">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4 text-4xl">{emoji}</div>
+          <div className="mb-4 text-4xl">{t(`errors.${errorKey}.emoji`)}</div>
           <p className="mb-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
-            {title}
+            {t(`errors.${errorKey}.title`)}
           </p>
           <p className="mb-6 max-w-md text-stone-600 dark:text-stone-400">
-            {message}
+            {t(`errors.${errorKey}.message`)}
           </p>
           {retryable && (
             <button
               className="rounded-full bg-linear-to-r from-rose-500 to-rose-600 px-6 py-2 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:from-rose-600 hover:to-rose-700 hover:shadow-xl active:scale-95"
               onClick={() => setRetryCount((c) => c + 1)}
             >
-              Réessayer
+              {t('retry')}
             </button>
           )}
         </div>

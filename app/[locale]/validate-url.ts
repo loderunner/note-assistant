@@ -4,6 +4,10 @@
  *
  * @param url - The YouTube URL to validate
  * @returns The video ID if valid, null otherwise
+ *
+ * @example
+ * const videoId = extractVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+ * // videoId === 'dQw4w9WgXcQ'
  */
 export function extractVideoId(url: string): string | null {
   const patterns = [
@@ -28,7 +32,11 @@ export function extractVideoId(url: string): string | null {
  *
  * @param url - The URL to validate
  * @returns true if valid YouTube URL, false otherwise
+ *
+ * @example
+ * isValidYouTubeURL('https://youtu.be/dQw4w9WgXcQ'); // true
+ * isValidYouTubeURL('https://example.com'); // false
  */
-export function isValidYouTubeUrl(url: string): boolean {
+export function isValidYouTubeURL(url: string): boolean {
   return extractVideoId(url) !== null;
 }

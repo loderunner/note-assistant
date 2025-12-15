@@ -1,17 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { extractVideoId } from './youtube/validate-url';
+import { extractVideoId } from './validate-url';
+
+import { useRouter } from '@/i18n/navigation';
 
 type UrlInputState = 'idle' | 'validating' | 'error';
 
+/**
+ * URL input component for entering YouTube video URLs.
+ * Validates the URL and navigates to the video page with locale prefix.
+ */
 export function UrlInput() {
+  const t = useTranslations('home.urlInput');
   const [url, setUrl] = useState('');
   const [state, setState] = useState<UrlInputState>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
   const [showError, setShowError] = useState(false);
   const router = useRouter();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -31,7 +37,6 @@ export function UrlInput() {
     if (trimmedUrl.length === 0) {
       setTimeout(() => {
         setState('idle');
-        setErrorMessage('');
         setShowError(false);
       }, 0);
       return;
@@ -49,9 +54,6 @@ export function UrlInput() {
     } else {
       timeoutRef.current = setTimeout(() => {
         setState('error');
-        setErrorMessage(
-          'URL YouTube invalide. Veuillez entrer une URL valide.',
-        );
         setShowError(true);
       }, 1000);
     }
@@ -78,11 +80,9 @@ export function UrlInput() {
       }, 1000);
     } else if (trimmedUrl.length > 0) {
       setState('error');
-      setErrorMessage('URL YouTube invalide. Veuillez entrer une URL valide.');
       setShowError(true);
     } else {
       setState('idle');
-      setErrorMessage('');
       setShowError(false);
     }
   };
@@ -100,14 +100,13 @@ export function UrlInput() {
               state === 'validating' ? 'opacity-70' : 'opacity-100',
             )}
             disabled={state === 'validating'}
-            placeholder="https://youtube.com/watch?v=..."
+            placeholder={t('placeholder')}
             type="text"
             value={url}
             onChange={(e) => {
               setUrl(e.target.value);
               if (state === 'error') {
                 setState('idle');
-                setErrorMessage('');
                 setShowError(false);
               }
             }}
@@ -144,11 +143,11 @@ export function UrlInput() {
         <div className="mt-6 flex min-h-12 flex-col items-center justify-start">
           {showError && (
             <p className="mb-2 translate-y-0 text-sm text-rose-600 opacity-100 transition-all duration-300 dark:text-rose-400 starting:translate-y-2 starting:opacity-0">
-              {errorMessage}
+              {t('invalidURL')}
             </p>
           )}
           <p className="text-center text-sm text-stone-600 opacity-100 transition-opacity delay-200 duration-300 dark:text-stone-400 starting:opacity-0">
-            Entrez une URL YouTube
+            {t('helpText')}
           </p>
         </div>
       </form>

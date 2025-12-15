@@ -1,15 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useVideoPlayer } from '../video-player-context';
 
+import { useRouter } from '@/i18n/navigation';
+
 type VideoPlayerProps = {
+  /** The YouTube video ID to play */
   videoId: string;
 };
 
+/**
+ * YouTube video player component.
+ * Handles video loading, playback, and navigation to review page on video end.
+ */
 export function VideoPlayer({ videoId }: VideoPlayerProps) {
+  const t = useTranslations('video');
   const [error, setError] = useState<string | null>(null);
   const [playerReady, setPlayerReadyLocal] = useState(false);
   const playerRef = useRef<any>(null);
@@ -50,7 +58,7 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
           },
           onError: (event: { data: number }) => {
             console.error('YouTube player error:', event.data);
-            setError('Erreur lors du chargement de la vidéo');
+            setError(t('error'));
           },
           onStateChange: (event: { data: number }) => {
             if (event.data === yt.PlayerState.ENDED) {
@@ -61,9 +69,9 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
       });
     } catch (err) {
       console.error('Error initializing YouTube player:', err);
-      setError('Impossible de charger la vidéo');
+      setError(t('errorGeneric'));
     }
-  }, [videoId, router, setPlayerReady]);
+  }, [videoId, router, setPlayerReady, t]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -150,9 +158,7 @@ export function VideoPlayer({ videoId }: VideoPlayerProps) {
         <div ref={containerRef} className="absolute inset-0 h-full w-full" />
         {!playerReady && error === null && (
           <div className="absolute inset-0 flex items-center justify-center bg-amber-50 dark:bg-slate-800">
-            <p className="text-stone-600 dark:text-stone-300">
-              Chargement de la vidéo...
-            </p>
+            <p className="text-stone-600 dark:text-stone-300">{t('loading')}</p>
           </div>
         )}
         {error !== null && (

@@ -1,18 +1,21 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { VideoPlayerProvider } from './video-player-context';
 
+import { Link } from '@/i18n/navigation';
+
 type VideoLayoutProps = {
-  params: Promise<{ videoId: string }>;
+  /** Video player slot */
   video: ReactNode;
+  /** Content slot */
   content: ReactNode;
 };
 
-export default async function VideoLayout({
-  video,
-  content,
-}: VideoLayoutProps) {
+/**
+ * Layout for video pages.
+ * Provides the video player context and renders the video and content slots.
+ */
+export default function VideoLayout({ video, content }: VideoLayoutProps) {
   return (
     <VideoPlayerProvider>
       <main className="flex min-h-screen flex-col items-center bg-linear-to-br from-amber-50 to-orange-50 px-4 py-8 opacity-100 transition-opacity duration-300 dark:from-slate-900 dark:to-slate-950 starting:opacity-0">

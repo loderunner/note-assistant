@@ -2,6 +2,7 @@
   "name": "note-assistant",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,9 +15,12 @@
     "ai": "6.0.0-beta.148",
     "canvas-confetti": "1.9.4",
     "next": "16.0.10",
+    "next-intl": "4.6.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "server-only": "0.0.1",
     "tailwind-merge": "3.4.0",
+    "typelit": "0.2.0",
     "youtubei.js": "16.0.1",
     "zod": "4.1.13"
   },

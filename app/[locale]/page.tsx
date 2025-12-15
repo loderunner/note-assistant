@@ -1,6 +1,6 @@
 import { UrlInput } from './url-input';
 
-export function HomeContent() {
+export default function Home() {
   return (
     <main className="relative flex h-screen items-center justify-center bg-linear-to-br from-amber-50 to-orange-50 px-4 opacity-100 transition-opacity duration-300 dark:from-slate-900 dark:to-slate-950 starting:opacity-0">
       <div className="relative flex w-full flex-col items-center">

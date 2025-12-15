@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { generateBulletPoints } from '@/app/summary/generate';
+import { type Locale, isValidLocale } from '@/i18n/config';
 
 const requestBodySchema = z.object({
   /** The transcript text to generate bullet points from. */
@@ -10,6 +11,8 @@ const requestBodySchema = z.object({
   videoId: z.string(),
   /** The duration of the video in milliseconds. */
   duration: z.number(),
+  /** The user's locale for prompt language. */
+  locale: z.string().optional(),
 });
 
 const successResponseSchema = z.object({
@@ -52,10 +55,27 @@ export async function POST(
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    const { transcript, videoId, duration } = parseResult.data;
+    const {
+      transcript,
+      videoId,
+      duration,
+      locale: rawLocale,
+    } = parseResult.data;
+    const locale: Locale =
+      rawLocale !== undefined && isValidLocale(rawLocale) ? rawLocale : 'en';
 
-    console.info('Generating bullet points for video', videoId);
-    const result = await generateBulletPoints(transcript, videoId, duration);
+    console.info(
+      'Generating bullet points for video',
+      videoId,
+      'with locale',
+      locale,
+    );
+    const result = await generateBulletPoints(
+      transcript,
+      videoId,
+      duration,
+      locale,
+    );
 
     const validatedResult = successResponseSchema.parse(result);
     return NextResponse.json(validatedResult);

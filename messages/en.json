@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "Notix",
+    "description": "Practice your note-taking skills"
+  },
+  "home": {
+    "urlInput": {
+      "placeholder": "https://youtube.com/watch?v=...",
+      "helpText": "Enter a YouTube URL",
+      "invalidURL": "Invalid YouTube URL. Please enter a valid URL."
+    }
+  },
+  "video": {
+    "loading": "Loading video...",
+    "error": "Error loading video",
+    "errorGeneric": "Unable to load video",
+    "watchAndTakeNotes": "Watch the video and take notes",
+    "skipToEnd": "Skip to end",
+    "watchTitle": "Watch",
+    "reviewTitle": "Review"
+  },
+  "review": {
+    "instruction": "Compare your notes and make sure you have all the important points",
+    "loading": {
+      "transcript": "Fetching transcript...",
+      "generating": "Generating key points..."
+    },
+    "errors": {
+      "noTranscript": {
+        "emoji": "📝",
+        "title": "No transcript",
+        "message": "This video does not have a transcript available. Only videos with official subtitles are supported."
+      },
+      "fetchFailed": {
+        "emoji": "🌐",
+        "title": "Connection error",
+        "message": "Unable to fetch the transcript from YouTube. Please try again in a moment."
+      },
+      "generationFailed": {
+        "emoji": "🤖",
+        "title": "Generation error",
+        "message": "An error occurred while generating key points. Please try again."
+      }
+    },
+    "retry": "Retry",
+    "rewatch": "Rewatch",
+    "newVideo": "New video"
+  },
+  "error": {
+    "oops": "Oops!",
+    "retry": "Retry",
+    "newVideo": "New video"
+  },
+  "prompts": {
+    "bulletPoints": {
+      "instruction": "Analyze this video transcript and extract the {count} most important key points that a student should have noted. Points should remain short and concise.",
+      "criteria": "Points to retain:\n- Important facts and essential information\n- Significant dates, names, and numbers\n- Key concepts explained\n- Main conclusions",
+      "languageNote": "Important: Respond in the same language as the transcript. If the transcript is in English, respond in English. If it is in French, respond in French, etc.",
+      "transcriptLabel": "Transcript:"
+    }
+  }
+}

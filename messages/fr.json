@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "Notix",
+    "description": "Entraîne-toi à la prise de notes"
+  },
+  "home": {
+    "urlInput": {
+      "placeholder": "https://youtube.com/watch?v=...",
+      "helpText": "Entrez une URL YouTube",
+      "invalidURL": "URL YouTube invalide. Veuillez entrer une URL valide."
+    }
+  },
+  "video": {
+    "loading": "Chargement de la vidéo...",
+    "error": "Erreur lors du chargement de la vidéo",
+    "errorGeneric": "Impossible de charger la vidéo",
+    "watchAndTakeNotes": "Regardez la vidéo et prenez des notes",
+    "skipToEnd": "Aller à la fin",
+    "watchTitle": "Regarder",
+    "reviewTitle": "Réviser"
+  },
+  "review": {
+    "instruction": "Comparez vos notes et vérifiez que vous avez bien tous les points importants",
+    "loading": {
+      "transcript": "Récupération de la transcription...",
+      "generating": "Génération des points clés..."
+    },
+    "errors": {
+      "noTranscript": {
+        "emoji": "📝",
+        "title": "Pas de transcription",
+        "message": "Cette vidéo n'a pas de transcription disponible. Seules les vidéos avec sous-titres officiels sont supportées."
+      },
+      "fetchFailed": {
+        "emoji": "🌐",
+        "title": "Erreur de connexion",
+        "message": "Impossible de récupérer la transcription depuis YouTube. Réessayez dans quelques instants."
+      },
+      "generationFailed": {
+        "emoji": "🤖",
+        "title": "Erreur de génération",
+        "message": "Une erreur s'est produite lors de la génération des points clés. Réessayez."
+      }
+    },
+    "retry": "Réessayer",
+    "rewatch": "Revoir",
+    "newVideo": "Nouvelle vidéo"
+  },
+  "error": {
+    "oops": "Oups !",
+    "retry": "Réessayer",
+    "newVideo": "Nouvelle vidéo"
+  },
+  "prompts": {
+    "bulletPoints": {
+      "instruction": "Analyse cette transcription de vidéo et extrais les {count} points clés les plus importants que l'étudiant devrait avoir notés. Les points doivent rester courts et concis.",
+      "criteria": "Points à retenir:\n- Les faits importants et informations essentielles\n- Les dates, noms, et chiffres significatifs\n- Les concepts clés expliqués\n- Les conclusions principales",
+      "languageNote": "Important: Réponds dans la même langue que la transcription. Si la transcription est en anglais, réponds en anglais. Si elle est en français, réponds en français, etc.",
+      "transcriptLabel": "Transcription:"
+    }
+  }
+}

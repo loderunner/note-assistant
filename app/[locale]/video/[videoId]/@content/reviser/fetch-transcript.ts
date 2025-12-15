@@ -18,15 +18,15 @@ export type TranscriptResult =
   | { success: false; errorType: TranscriptErrorType };
 
 /**
- * Tries to get the official transcript for a YouTube video.
- * Calls server-side API to avoid CORS issues.
+ * Fetches the official transcript for a YouTube video from the API.
+ * Calls server-side API to avoid CORS issues with YouTube.
  *
  * @param videoId - The YouTube video ID
  * @returns A result object indicating success with transcript data,
  *          or failure with an error type.
  *
  * @example
- * const result = await getTranscript('dQw4w9WgXcQ');
+ * const result = await fetchTranscript('dQw4w9WgXcQ');
  * if (result.success) {
  *   console.log(result.transcript.fullText);
  * } else if (result.errorType === 'no_transcript') {
@@ -35,7 +35,7 @@ export type TranscriptResult =
  *   console.log('Failed to fetch, try again');
  * }
  */
-export async function getTranscript(
+export async function fetchTranscript(
   videoId: string,
 ): Promise<TranscriptResult> {
   try {
