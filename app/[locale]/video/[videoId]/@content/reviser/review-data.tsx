@@ -46,10 +46,16 @@ export function ReviewData({ videoId }: ReviewDataProps) {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function processVideo() {
       // Get official transcript
       setState({ status: 'loading', step: 'transcript' });
       const transcriptResult = await fetchTranscript(videoId);
+
+      if (abortController.signal.aborted) {
+        return;
+      }
 
       if (!transcriptResult.success) {
         setState({ status: 'error', errorType: transcriptResult.errorType });
@@ -73,6 +79,7 @@ export function ReviewData({ videoId }: ReviewDataProps) {
             duration: transcript.duration,
             locale,
           }),
+          signal: abortController.signal,
         });
 
         if (!bulletsResponse.ok) {
@@ -84,12 +91,19 @@ export function ReviewData({ videoId }: ReviewDataProps) {
         const validatedData = successResponseSchema.parse(bulletsData);
         setState({ status: 'success', points: validatedData.points });
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error('Error generating bullet points:', error);
         setState({ status: 'error', errorType: 'generation_failed' });
       }
     }
 
     processVideo();
+
+    return () => {
+      abortController.abort();
+    };
   }, [videoId, retryCount, locale]);
 
   const scrolledRef = useRef(false);

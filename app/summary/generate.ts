@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai';
 import { Output, generateText } from 'ai';
 import { z } from 'zod';
 
+import { createBlobCache } from '@/cache/blob-cache';
 import { type Locale } from '@/i18n/config';
 
 const bulletPointsSchema = z.object({
@@ -12,29 +13,18 @@ const bulletPointsSchema = z.object({
 
 type BulletPointsResult = z.infer<typeof bulletPointsSchema>;
 
-type Cache = {
-  has(key: string): boolean;
-  get(key: string): Promise<BulletPointsResult> | undefined;
-  set(key: string, value: Promise<BulletPointsResult>): void;
-};
-
-/**
- * No-op cache implementation that doesn't cache anything.
- */
-const noOpCache: Cache = {
-  has: () => false,
-  get: () => undefined,
-  set: () => {},
-};
-
 /**
  * Cache for bullet points generation results.
  * In development, uses a no-op implementation to disable caching.
  */
-const summaryCache: Cache =
+
+const summaryCache =
   process.env.NODE_ENV === 'development'
-    ? noOpCache
-    : new Map<string, Promise<BulletPointsResult>>();
+    ? {
+        get: async () => null as BulletPointsResult | null,
+        set: async () => {},
+      }
+    : createBlobCache('summaries/', bulletPointsSchema);
 
 /**
  * Prompt templates for bullet point generation in different locales.
@@ -101,10 +91,21 @@ export async function generateBulletPoints(
   duration: number,
   locale: Locale = 'en',
 ): Promise<BulletPointsResult> {
+  console.info(
+    'Generating bullet points for video',
+    videoId,
+    'with locale',
+    locale,
+  );
   const cacheKey = `${videoId}-${locale}`;
-  if (summaryCache.has(cacheKey)) {
-    return summaryCache.get(cacheKey)!;
+  console.info('Checking cache for key', cacheKey);
+  const cached = await summaryCache.get(cacheKey);
+  if (cached !== null) {
+    console.info('Cache hit for key', cacheKey);
+    return cached;
   }
+
+  console.info('Cache miss for key', cacheKey);
 
   // Convert milliseconds to minutes for bullet count calculation
   const durationMinutes = Math.ceil(duration / 60000);
@@ -120,12 +121,15 @@ ${template.languageNote}
 ${template.transcriptLabel}
 ${transcript}`;
 
-  const promise = generateText({
+  console.info("Generating summary bullets with model openai('gpt-4.1-mini')");
+  const { output } = await generateText({
     model: openai('gpt-4.1-mini'),
     output: Output.object({ schema: bulletPointsSchema }),
     prompt,
-  }).then(({ output }) => output);
+  });
+  console.info(`Generated summary bullets: ${output.points.length} points`);
 
-  summaryCache.set(cacheKey, promise);
-  return promise;
+  console.info('Caching summary bullets for key', cacheKey);
+  await summaryCache.set(cacheKey, output, 24 * 60 * 60 * 1000);
+  return output;
 }

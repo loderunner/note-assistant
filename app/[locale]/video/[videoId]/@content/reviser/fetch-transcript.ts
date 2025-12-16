@@ -1,21 +1,10 @@
 'use client';
 
 import {
-  type Segment,
-  type Transcript,
-  type TranscriptErrorType,
+  type TranscriptResult,
   errorResponseSchema,
   successResponseSchema,
-} from '@/app/api/youtube/transcript/route';
-
-export type { Segment, Transcript, TranscriptErrorType };
-
-/**
- * Result of a transcript fetch attempt.
- */
-export type TranscriptResult =
-  | { success: true; transcript: Transcript }
-  | { success: false; errorType: TranscriptErrorType };
+} from '@/youtube/transcript-schema';
 
 /**
  * Fetches the official transcript for a YouTube video from the API.

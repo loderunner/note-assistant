@@ -1,51 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import {
-  type Segment,
-  type Transcript,
-  type TranscriptErrorType,
-  getVideoTranscript,
-} from '@/youtube/video-info';
-
-export type { Segment, Transcript, TranscriptErrorType };
-
-const segmentSchema = z.object({
-  /** The text content of the segment. */
-  text: z.string(),
-  /** Start time in milliseconds. */
-  start: z.number(),
-  /** Duration in milliseconds. */
-  duration: z.number(),
-});
-
-const transcriptSchema = z.object({
-  /** Array of transcript segments with timing information. */
-  segments: z.array(segmentSchema),
-  /** Full concatenated transcript text. */
-  fullText: z.string(),
-  /** Optional language code of the transcript. */
-  language: z.string().optional(),
-  /** Video duration in milliseconds. */
-  duration: z.number(),
-});
-
-const transcriptErrorTypeSchema = z.enum(['no_transcript', 'fetch_failed']);
-
-const successResponseSchema = z.object({
-  /** The transcript data. */
-  transcript: transcriptSchema,
-});
-
-const errorResponseSchema = z.object({
-  /** The error type. */
-  error: transcriptErrorTypeSchema,
-});
-
-export type TranscriptSuccessResponse = z.infer<typeof successResponseSchema>;
-export type TranscriptErrorResponse = z.infer<typeof errorResponseSchema>;
-
-export { errorResponseSchema, successResponseSchema };
+  errorResponseSchema,
+  successResponseSchema,
+  transcriptSchema,
+} from '@/youtube/transcript-schema';
+import { getVideoTranscript } from '@/youtube/video-info';
 
 /**
  * API route to get official transcript for a YouTube video.
