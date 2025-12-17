@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { Suspense } from 'react';
 
+import { fetchReviewData } from './fetch-review-data';
 import { ReviewContent } from './review-content';
-import { ReviewData } from './review-data';
+import { ReviewDataClient } from './review-data-client';
+import { ReviewDataLoading } from './review-data-loading';
 
+import { type Locale, isValidLocale } from '@/i18n/config';
 import { getVideoTitle } from '@/youtube/video-info';
 
 type PageProps = {
@@ -31,10 +35,20 @@ export async function generateMetadata({
 
 /**
  * Review page for comparing notes with generated key points.
+ * Fetches transcript and generates bullet points on the server,
+ * streaming results to the client via Suspense.
  */
 export default async function ReviewPage({ params }: PageProps) {
-  const { videoId } = await params;
-  const t = await getTranslations('review');
+  const [{ videoId }, t, rawLocale] = await Promise.all([
+    params,
+    getTranslations('review'),
+    getLocale(),
+  ]);
+
+  const locale: Locale = isValidLocale(rawLocale) ? rawLocale : 'en';
+
+  // Start fetch immediately - don't await
+  const reviewDataPromise = fetchReviewData(videoId, locale);
 
   return (
     <>
@@ -42,7 +56,9 @@ export default async function ReviewPage({ params }: PageProps) {
         {t('instruction')}
       </p>
       <ReviewContent>
-        <ReviewData videoId={videoId} />
+        <Suspense fallback={<ReviewDataLoading />}>
+          <ReviewDataClient reviewDataPromise={reviewDataPromise} />
+        </Suspense>
       </ReviewContent>
     </>
   );

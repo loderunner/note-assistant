@@ -6,7 +6,7 @@ type ReviewContentProps = {
 };
 
 /**
- * Client component that provides the animated layout for the review page.
+ * Server component that provides the layout wrapper for the review page.
  * Accepts children to allow Server Components to be passed through.
  */
 export function ReviewContent({ children }: ReviewContentProps) {
