@@ -20,8 +20,10 @@ type PageProps = {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { videoId } = await params;
-  const t = await getTranslations('video');
+  const [{ videoId }, t] = await Promise.all([
+    params,
+    getTranslations('video'),
+  ]);
   const videoTitle = await getVideoTitle(videoId);
   const reviewTitle = t('reviewTitle');
 
