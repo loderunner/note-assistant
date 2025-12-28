@@ -1,5 +1,5 @@
 import { BG, GOOG_API_KEY, type WebPoSignalOutput, buildURL } from 'bgutils-js';
-import { Window } from 'happy-dom';
+import { JSDOM } from 'jsdom';
 import { Innertube } from 'youtubei.js';
 
 let cachedInnertube: Innertube | null = null;
@@ -66,15 +66,16 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
   console.debug('createAuthenticatedInnertube: got visitor data');
 
   // 2. Setup fake DOM environment for BotGuard
-  // Using happy-dom instead of jsdom for Vercel serverless compatibility
+  // Using jsdom 27.0.0 - the last version before ESM issues
+  // See: https://github.com/jsdom/jsdom/issues/3959 - jsdom 27.0.1+ has ESM issues
   console.debug(
     'createAuthenticatedInnertube: setting up fake DOM for BotGuard',
   );
-  const dom = new Window({ url: 'https://www.youtube.com/' });
+  const dom = new JSDOM('', { url: 'https://www.youtube.com/' });
 
   Object.assign(globalThis, {
-    window: dom,
-    document: dom.document,
+    window: dom.window,
+    document: dom.window.document,
   });
 
   // 3. Fetch BotGuard challenge
