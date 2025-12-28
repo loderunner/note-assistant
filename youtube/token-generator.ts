@@ -1,5 +1,4 @@
 import { BG, GOOG_API_KEY, type WebPoSignalOutput, buildURL } from 'bgutils-js';
-import { JSDOM } from 'jsdom';
 import { Innertube } from 'youtubei.js';
 
 let cachedInnertube: Innertube | null = null;
@@ -61,6 +60,7 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
   }
 
   // 2. Setup fake DOM environment for BotGuard
+  const { JSDOM } = await import('jsdom');
   const dom = new JSDOM();
 
   Object.assign(globalThis, {
