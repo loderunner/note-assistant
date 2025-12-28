@@ -1,5 +1,10 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
 import { BG, GOOG_API_KEY, type WebPoSignalOutput, buildURL } from 'bgutils-js';
 import { Innertube } from 'youtubei.js';
+
+const require = createRequire(fileURLToPath(import.meta.url));
 
 let cachedInnertube: Innertube | null = null;
 let innertubeExpiry: number = 0;
@@ -60,7 +65,8 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
   }
 
   // 2. Setup fake DOM environment for BotGuard
-  const { JSDOM } = await import('jsdom');
+  // Use require() to load JSDOM as CommonJS, bypassing Turbopack's ESM handling
+  const { JSDOM } = require('jsdom');
   const dom = new JSDOM();
 
   Object.assign(globalThis, {
