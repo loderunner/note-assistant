@@ -43,11 +43,17 @@ export async function POST(
 ): Promise<
   NextResponse<GenerateBulletsSuccessResponse | GenerateBulletsErrorResponse>
 > {
+  console.debug('POST /api/generate-bullets - incoming request');
+
   try {
     const body = await request.json();
     const parseResult = requestBodySchema.safeParse(body);
 
     if (!parseResult.success) {
+      console.warn(
+        'POST /api/generate-bullets - invalid request body:',
+        z.prettifyError(parseResult.error),
+      );
       const errorResponse = errorResponseSchema.parse({
         error: 'Invalid request body',
         details: z.prettifyError(parseResult.error),
@@ -65,10 +71,7 @@ export async function POST(
       rawLocale !== undefined && isValidLocale(rawLocale) ? rawLocale : 'en';
 
     console.info(
-      'Generating bullet points for video',
-      videoId,
-      'with locale',
-      locale,
+      `POST /api/generate-bullets - generating for video=${videoId} locale=${locale} duration=${duration}ms transcript=${transcript.length} chars`,
     );
     const result = await generateBulletPoints(
       transcript,
@@ -77,10 +80,13 @@ export async function POST(
       locale,
     );
 
+    console.info(
+      `POST /api/generate-bullets - success, generated ${result.points.length} points for video=${videoId}`,
+    );
     const validatedResult = successResponseSchema.parse(result);
     return NextResponse.json(validatedResult);
   } catch (error) {
-    console.error('Error in generate-bullets API route:', error);
+    console.error('POST /api/generate-bullets - internal server error:', error);
     const errorResponse = errorResponseSchema.parse({
       error: 'Internal server error',
     });

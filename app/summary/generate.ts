@@ -91,21 +91,21 @@ export async function generateBulletPoints(
   duration: number,
   locale: Locale = 'en',
 ): Promise<BulletPointsResult> {
-  console.info(
-    'Generating bullet points for video',
-    videoId,
-    'with locale',
-    locale,
-  );
   const cacheKey = `${videoId}-${locale}`;
-  console.info('Checking cache for key', cacheKey);
+  console.debug(
+    `generateBulletPoints: starting for video=${videoId} locale=${locale} cacheKey=${cacheKey}`,
+  );
+
+  console.debug(`generateBulletPoints: checking cache for key=${cacheKey}`);
   const cached = await summaryCache.get(cacheKey);
   if (cached !== null) {
-    console.info('Cache hit for key', cacheKey);
+    console.info(
+      `generateBulletPoints: cache hit for video=${videoId}, returning ${cached.points.length} cached points`,
+    );
     return cached;
   }
 
-  console.info('Cache miss for key', cacheKey);
+  console.debug(`generateBulletPoints: cache miss for key=${cacheKey}`);
 
   // Convert milliseconds to minutes for bullet count calculation
   const durationMinutes = Math.ceil(duration / 60000);
@@ -121,15 +121,19 @@ ${template.languageNote}
 ${template.transcriptLabel}
 ${transcript}`;
 
-  console.info("Generating summary bullets with model openai('gpt-4.1-mini')");
+  console.debug(
+    `generateBulletPoints: calling OpenAI gpt-4.1-mini for video=${videoId} targetCount=${targetCount} promptLength=${prompt.length}`,
+  );
   const { output } = await generateText({
     model: openai('gpt-4.1-mini'),
     output: Output.object({ schema: bulletPointsSchema }),
     prompt,
   });
-  console.info(`Generated summary bullets: ${output.points.length} points`);
+  console.info(
+    `generateBulletPoints: OpenAI returned ${output.points.length} points for video=${videoId}`,
+  );
 
-  console.info('Caching summary bullets for key', cacheKey);
+  console.debug(`generateBulletPoints: caching result for key=${cacheKey}`);
   await summaryCache.set(cacheKey, output, 24 * 60 * 60 * 1000);
   return output;
 }

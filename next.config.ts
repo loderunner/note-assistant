@@ -6,7 +6,6 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: process.env.NODE_ENV === 'production',
-  serverExternalPackages: ['jsdom'],
 };
 
 export default withNextIntl(nextConfig);

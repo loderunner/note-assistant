@@ -1,10 +1,6 @@
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
-
 import { BG, GOOG_API_KEY, type WebPoSignalOutput, buildURL } from 'bgutils-js';
+import { Window } from 'happy-dom';
 import { Innertube } from 'youtubei.js';
-
-const require = createRequire(fileURLToPath(import.meta.url));
 
 let cachedInnertube: Innertube | null = null;
 let innertubeExpiry: number = 0;
@@ -30,21 +26,25 @@ const INNERTUBE_TTL_MS = 5 * 60 * 60 * 1000; // 5 hours (conservative, tokens la
 export async function getInnertube(): Promise<Innertube> {
   // Return cached instance if still valid
   if (cachedInnertube !== null && Date.now() < innertubeExpiry) {
+    console.debug('getInnertube: returning cached instance');
     return cachedInnertube;
   }
 
   // If already generating, wait for that promise
   if (innertubePromise !== null) {
-    console.info('Waiting for in-progress Innertube creation');
+    console.debug('getInnertube: waiting for in-progress creation');
     return innertubePromise;
   }
 
-  console.info('Creating new authenticated Innertube instance');
+  console.info('getInnertube: creating new authenticated instance');
   innertubePromise = createAuthenticatedInnertube();
 
   try {
     cachedInnertube = await innertubePromise;
     innertubeExpiry = Date.now() + INNERTUBE_TTL_MS;
+    console.info(
+      `getInnertube: instance created and cached, expires in ${INNERTUBE_TTL_MS}ms`,
+    );
     return cachedInnertube;
   } finally {
     innertubePromise = null;
@@ -56,26 +56,29 @@ export async function getInnertube(): Promise<Innertube> {
  */
 async function createAuthenticatedInnertube(): Promise<Innertube> {
   // 1. Create barebones Innertube instance to get visitorData
-  console.info('Getting visitor data from YouTube');
+  console.debug('createAuthenticatedInnertube: fetching visitor data');
   const innertube = await Innertube.create({ retrieve_player: false });
   const visitorData = innertube.session.context.client.visitorData;
 
   if (visitorData === undefined) {
     throw new Error('Could not get visitor data from YouTube');
   }
+  console.debug('createAuthenticatedInnertube: got visitor data');
 
   // 2. Setup fake DOM environment for BotGuard
-  // Use require() to load JSDOM as CommonJS, bypassing Turbopack's ESM handling
-  const { JSDOM } = require('jsdom');
-  const dom = new JSDOM();
+  // Using happy-dom instead of jsdom for Vercel serverless compatibility
+  console.debug(
+    'createAuthenticatedInnertube: setting up fake DOM for BotGuard',
+  );
+  const dom = new Window({ url: 'https://www.youtube.com/' });
 
   Object.assign(globalThis, {
-    window: dom.window,
-    document: dom.window.document,
+    window: dom,
+    document: dom.document,
   });
 
   // 3. Fetch BotGuard challenge
-  console.info('Fetching BotGuard challenge');
+  console.debug('createAuthenticatedInnertube: fetching BotGuard challenge');
   const requestKey = 'O43z0dpjhgX20SCx4KAo';
 
   const challengeResponse = await fetch(buildURL('Create', true), {
@@ -101,9 +104,10 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
   if (bgChallenge === undefined) {
     throw new Error('Could not parse BotGuard challenge');
   }
+  console.debug('createAuthenticatedInnertube: BotGuard challenge received');
 
   // 4. Execute BotGuard interpreter script in fake DOM
-  console.info('Executing BotGuard interpreter');
+  console.debug('createAuthenticatedInnertube: executing BotGuard interpreter');
   const interpreterJavascript =
     bgChallenge.interpreterJavascript
       .privateDoNotAccessOrElseSafeScriptWrappedValue;
@@ -115,7 +119,7 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
   new Function(interpreterJavascript)();
 
   // 5. Create BotGuard client and get snapshot
-  console.info('Creating BotGuard snapshot');
+  console.debug('createAuthenticatedInnertube: creating BotGuard snapshot');
   const botguard = await BG.BotGuardClient.create({
     globalName: bgChallenge.globalName,
     globalObj: globalThis,
@@ -124,9 +128,12 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
 
   const webPoSignalOutput: WebPoSignalOutput = [];
   const botguardResponse = await botguard.snapshot({ webPoSignalOutput });
+  console.debug(
+    `createAuthenticatedInnertube: BotGuard snapshot created, response length=${botguardResponse.length}`,
+  );
 
   // 6. Get integrity token
-  console.info('Fetching integrity token');
+  console.debug('createAuthenticatedInnertube: fetching integrity token');
   const integrityTokenResponse = await fetch(buildURL('GenerateIT', true), {
     method: 'POST',
     headers: {
@@ -145,28 +152,44 @@ async function createAuthenticatedInnertube(): Promise<Innertube> {
 
   const response = (await integrityTokenResponse.json()) as unknown[];
 
-  if (typeof response[0] !== 'string') {
+  // Find the integrity token - it's the first string in the response array
+  // Response format: [null, ttl, null, token] or similar
+  const integrityToken = response.find(
+    (item): item is string => typeof item === 'string',
+  );
+
+  if (integrityToken === undefined) {
+    console.error(
+      'createAuthenticatedInnertube: integrity token response (no string found):',
+      JSON.stringify(response, null, 2),
+    );
     throw new Error('Could not get integrity token from response');
   }
+  console.debug('createAuthenticatedInnertube: integrity token received');
 
   // 7. Mint PO token using integrity token
-  console.info('Minting PO token');
+  console.debug('createAuthenticatedInnertube: minting PO token');
   const integrityTokenBasedMinter = await BG.WebPoMinter.create(
-    { integrityToken: response[0] },
+    { integrityToken },
     webPoSignalOutput,
   );
 
   const poToken =
     await integrityTokenBasedMinter.mintAsWebsafeString(visitorData);
+  console.debug(
+    `createAuthenticatedInnertube: PO token minted, length=${poToken.length}`,
+  );
 
   // 8. Create authenticated Innertube instance with the generated tokens
-  console.info('Creating final Innertube instance with PO token');
+  console.debug(
+    'createAuthenticatedInnertube: creating Innertube with PO token',
+  );
   const authenticatedInnertube = await Innertube.create({
     po_token: poToken,
     visitor_data: visitorData,
     generate_session_locally: true,
   });
 
-  console.info('Authenticated Innertube instance created');
+  console.info('createAuthenticatedInnertube: authenticated instance created');
   return authenticatedInnertube;
 }

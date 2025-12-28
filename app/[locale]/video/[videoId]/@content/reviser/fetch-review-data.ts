@@ -23,13 +23,24 @@ async function fetchReviewDataInternal(
   videoId: string,
   locale: Locale,
 ): Promise<ReviewDataResult> {
+  console.debug(
+    `fetchReviewDataInternal: starting for video=${videoId} locale=${locale}`,
+  );
+
   const transcriptResult = await getVideoTranscript(videoId);
 
   if (!transcriptResult.success) {
+    console.info(
+      `fetchReviewDataInternal: transcript fetch failed for video=${videoId} errorType=${transcriptResult.errorType}`,
+    );
     return { success: false, errorType: transcriptResult.errorType };
   }
 
   const { transcript } = transcriptResult;
+  console.debug(
+    `fetchReviewDataInternal: got transcript for video=${videoId}, generating bullet points`,
+  );
+
   const result = await generateBulletPoints(
     transcript.fullText,
     videoId,
@@ -37,6 +48,9 @@ async function fetchReviewDataInternal(
     locale,
   );
 
+  console.info(
+    `fetchReviewDataInternal: success for video=${videoId} points=${result.points.length}`,
+  );
   return { success: true, points: result.points };
 }
 
@@ -72,14 +86,24 @@ export async function fetchReviewData(
   locale: Locale,
 ): Promise<ReviewDataResult> {
   const cacheKey = `${videoId}-${locale}`;
-  const existingPromise = pendingFetches.get(cacheKey);
 
+  const existingPromise = pendingFetches.get(cacheKey);
   if (existingPromise !== undefined) {
+    console.debug(
+      `fetchReviewData: reusing pending promise for cacheKey=${cacheKey}`,
+    );
     return existingPromise;
   }
 
+  console.debug(
+    `fetchReviewData: starting new fetch for video=${videoId} locale=${locale}`,
+  );
+
   const promise = fetchReviewDataInternal(videoId, locale).finally(() => {
     // Clean up the cache entry once the promise resolves or rejects
+    console.debug(
+      `fetchReviewData: cleaning up pending promise for cacheKey=${cacheKey}`,
+    );
     pendingFetches.delete(cacheKey);
   });
 

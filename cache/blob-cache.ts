@@ -40,25 +40,36 @@ export function createBlobCache<T>(
   return {
     async get(key: string): Promise<T | null> {
       const pathname = `${basePath}${key}.json`;
+      console.debug(`blobCache.get: looking up pathname=${pathname}`);
 
       try {
         const metadata = await head(pathname);
+        console.debug(
+          `blobCache.get: found blob for pathname=${pathname}, fetching content`,
+        );
         const response = await fetch(metadata.url);
         const json: unknown = await response.json();
         const entry = cacheEntrySchema.parse(json);
 
         if (entry.expiresAt < Date.now()) {
+          console.debug(
+            `blobCache.get: entry expired for pathname=${pathname}, deleting`,
+          );
           await del(pathname);
           return null;
         }
+        console.debug(`blobCache.get: cache hit for pathname=${pathname}`);
         return entry.value;
       } catch (error) {
         if (error instanceof BlobNotFoundError) {
-          return null; // Cache miss
+          console.debug(`blobCache.get: cache miss for pathname=${pathname}`);
+          return null;
         }
         if (error instanceof z.ZodError) {
-          // Corrupted cache entry, treat as miss
-          console.warn(`Invalid cache entry at ${pathname}:`, error.issues);
+          console.warn(
+            `blobCache.get: corrupted cache entry at pathname=${pathname}, treating as miss:`,
+            error.issues,
+          );
           return null;
         }
         throw error;
@@ -66,15 +77,20 @@ export function createBlobCache<T>(
     },
 
     async set(key: string, value: T, ttl: number): Promise<void> {
+      const pathname = `${basePath}${key}.json`;
+      console.debug(
+        `blobCache.set: storing at pathname=${pathname} ttl=${ttl}ms`,
+      );
       const entry: CacheEntry<T> = {
         expiresAt: Date.now() + ttl,
         value,
       };
-      await put(`${basePath}${key}.json`, JSON.stringify(entry), {
+      await put(pathname, JSON.stringify(entry), {
         access: 'public',
         addRandomSuffix: false,
         contentType: 'application/json',
       });
+      console.debug(`blobCache.set: stored successfully at pathname=${pathname}`);
     },
   };
 }

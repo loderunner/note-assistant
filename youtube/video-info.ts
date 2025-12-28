@@ -46,15 +46,16 @@ const transcriptCache =
  * }
  */
 export async function getVideoTitle(videoId: string): Promise<string | null> {
-  console.info('Fetching video title for', videoId);
+  console.debug(`getVideoTitle: fetching for video=${videoId}`);
   try {
     const yt = await getInnertube();
     const video = await yt.getInfo(videoId);
     const title = video.basic_info.title ?? null;
-    console.info('Got video title:', title);
+    console.info(`getVideoTitle: success for video=${videoId} title="${title}"`);
     return title;
   } catch (error) {
-    console.error('Error fetching video title:', error);
+    // Handle error here by returning null - don't rethrow
+    console.error(`getVideoTitle: failed for video=${videoId}:`, error);
     return null;
   }
 }
@@ -80,23 +81,28 @@ export async function getVideoTitle(videoId: string): Promise<string | null> {
 export async function getVideoTranscript(
   videoId: string,
 ): Promise<TranscriptResult> {
+  console.debug(`getVideoTranscript: starting for video=${videoId}`);
+
   // Check cache first
   const cached = await transcriptCache.get(videoId);
   if (cached !== null) {
-    console.info('Transcript cache hit for', videoId);
+    console.info(
+      `getVideoTranscript: cache hit for video=${videoId} segments=${cached.segments.length}`,
+    );
     return { success: true, transcript: cached };
   }
 
-  console.info('Fetching transcript for', videoId);
+  console.debug(`getVideoTranscript: cache miss, fetching from YouTube for video=${videoId}`);
 
   try {
     const yt = await getInnertube();
+    console.debug(`getVideoTranscript: got Innertube instance, fetching video info for video=${videoId}`);
     const video = await yt.getInfo(videoId);
 
     // Get caption track URL from video info
     const captionTracks = video.captions?.caption_tracks;
     if (captionTracks === undefined || captionTracks.length === 0) {
-      console.info('No caption tracks available for', videoId);
+      console.info(`getVideoTranscript: no caption tracks for video=${videoId}`);
       return { success: false, errorType: 'no_transcript' };
     }
 
@@ -104,11 +110,8 @@ export async function getVideoTranscript(
     const captionTrack = captionTracks[0];
     const { base_url: baseURL } = captionTrack;
 
-    console.info(
-      'Fetching timedtext for',
-      videoId,
-      'language:',
-      captionTrack.language_code,
+    console.debug(
+      `getVideoTranscript: fetching timedtext for video=${videoId} language=${captionTrack.language_code}`,
     );
 
     // Fetch transcript as JSON from timedtext API
@@ -117,14 +120,17 @@ export async function getVideoTranscript(
 
     const response = await fetch(transcriptURL.toString());
     if (!response.ok) {
-      console.error('Failed to fetch timedtext:', response.status);
+      // Handle error here by returning result - don't rethrow
+      console.error(
+        `getVideoTranscript: timedtext fetch failed for video=${videoId} status=${response.status}`,
+      );
       return { success: false, errorType: 'fetch_failed' };
     }
 
     const timedTextData = (await response.json()) as TimedTextResponse;
 
     if (timedTextData.events === undefined) {
-      console.info('No events in timedtext response for', videoId);
+      console.info(`getVideoTranscript: no events in timedtext for video=${videoId}`);
       return { success: false, errorType: 'no_transcript' };
     }
 
@@ -162,16 +168,11 @@ export async function getVideoTranscript(
     };
 
     console.info(
-      'Got transcript for',
-      videoId,
-      '-',
-      segments.length,
-      'segments,',
-      fullText.length,
-      'chars',
+      `getVideoTranscript: success for video=${videoId} segments=${segments.length} chars=${fullText.length} duration=${duration}ms`,
     );
 
     // Cache for 30 days - transcripts don't change
+    console.debug(`getVideoTranscript: caching transcript for video=${videoId}`);
     await transcriptCache.set(
       videoId,
       transcriptData,
@@ -183,8 +184,7 @@ export async function getVideoTranscript(
       transcript: transcriptData,
     };
   } catch (error) {
-    console.error('Error fetching transcript:', error);
-
+    // Handle error here by returning result - don't rethrow
     // Check if it's genuinely a "no transcript" error vs a transient failure
     if (
       error instanceof Error &&
@@ -192,9 +192,14 @@ export async function getVideoTranscript(
         error.message.includes('transcript') ||
         error.message.includes('no transcript'))
     ) {
+      console.info(
+        `getVideoTranscript: no transcript available for video=${videoId}:`,
+        error.message,
+      );
       return { success: false, errorType: 'no_transcript' };
     }
 
+    console.error(`getVideoTranscript: failed for video=${videoId}:`, error);
     return { success: false, errorType: 'fetch_failed' };
   }
 }
